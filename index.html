@@ -93,13 +93,33 @@
             margin-bottom: 25px;
         }
 
-        /* --- 상단 액션 버튼 그룹 (편집모드, 동기화) --- */
+        /* --- 상단 액션 버튼 그룹 (편집모드, 동기화, 백업) --- */
         .top-actions-container {
             display: flex;
             flex-direction: column;
             align-items: flex-end;
             gap: 10px;
             margin-bottom: 15px;
+        }
+        .action-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .backup-btn {
+            padding: 10px 16px;
+            background-color: var(--btn-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .backup-btn:hover {
+            background-color: var(--btn-hover);
+            border-color: var(--sub-text);
         }
         .edit-mode-btn {
             padding: 8px 16px;
@@ -802,16 +822,18 @@
     <div id="recharge-timer">기본 오드 자연 충전까지 남은 시간: 00:00:00</div>
     <p class="note">※ 모든 소모/차감 액션은 <b>좌클릭</b>, 실수로 잘못 누른 액션의 취소/복구는 <b>우클릭</b>을 사용하세요.</p>
 
-    <!-- 편집 모드 및 동기화 버튼 -->
     <div class="top-actions-container">
         <button id="editModeToggleBtn" class="edit-mode-btn" onclick="toggleEditMode()">🔧 편집 모드 (꺼짐)</button>
-        <button class="refresh-btn" onclick="manualTimePass()">🔄 시간 경과 즉시 동기화 및 새로고침</button>
+        <div class="action-row">
+            <button class="backup-btn" onclick="exportBackup()">💾 백업 생성</button>
+            <button class="backup-btn" onclick="document.getElementById('backupFileInput').click()">📂 백업 불러오기</button>
+            <input type="file" id="backupFileInput" style="display: none" accept=".txt" onchange="importBackup(event)">
+            <button class="refresh-btn" onclick="manualTimePass()">🔄 시간 경과 즉시 동기화 및 새로고침</button>
+        </div>
     </div>
 
-    <!-- 신규 대시보드 구조 적용 -->
     <div class="global-dashboard-wrapper">
         
-        <!-- 상단: 오드 종합 정보 -->
         <div class="dashboard-top-row">
             <div class="dashboard-card">
                 <div class="card-header">
@@ -852,7 +874,6 @@
             </div>
         </div>
 
-        <!-- 하단: 행동 횟수 정보 -->
         <div class="dashboard-bottom-row">
             <div class="dashboard-card">
                 <div class="card-header">
@@ -956,7 +977,6 @@
         </div>
     </div>
 
-    <!-- 오드 조절 모달 -->
     <div id="aetherModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header" id="modal-char-name">캐릭터 이름</div>
@@ -1549,6 +1569,71 @@
     function manualTimePass() {
         checkAutoResets();
         location.reload();
+    }
+
+    // --- 백업 생성 및 불러오기 함수 ---
+    function exportBackup() {
+        const data = localStorage.getItem('aion2_refined_data');
+        if (!data) {
+            alert("저장된 데이터가 없습니다.");
+            return;
+        }
+
+        // YYYY.MM.DD.HH.mm.ss 포맷으로 날짜 문자열 생성
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const MM = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        const HH = String(now.getHours()).padStart(2, '0');
+        const mm = String(now.getMinutes()).padStart(2, '0');
+        const ss = String(now.getSeconds()).padStart(2, '0');
+        
+        const filename = `${yyyy}-${MM}-${dd}-${HH}-${mm}-${ss}_aion2_manage_backup.txt`;
+        
+        // 텍스트 파일로 다운로드 (다른 이름으로 저장하기 창 트리거)
+        const blob = new Blob([data], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        
+        // 다운로드 후 객체 해제
+        setTimeout(() => {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }, 0);
+    }
+
+    function importBackup(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        // 경고 모달 (브라우저 기본 confirm 사용)
+        if (confirm("경고: 기존 데이터가 모두 삭제되고 불러온 파일의 데이터로 덮어씌워집니다.\n계속하시겠습니까?")) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    
+                    // 간단한 유효성 검사 (데이터 구조 확인)
+                    if (importedData && typeof importedData === 'object' && Array.isArray(importedData.characters)) {
+                        localStorage.setItem('aion2_refined_data', JSON.stringify(importedData));
+                        alert("백업 데이터를 성공적으로 불러왔습니다.");
+                        location.reload(); // 즉시 덮어씌워진 데이터로 새로고침
+                    } else {
+                        alert("유효하지 않은 백업 파일 포맷입니다.");
+                    }
+                } catch (error) {
+                    alert("파일을 읽는 중 오류가 발생했습니다. 올바른 텍스트 백업 파일인지 확인해주세요.");
+                }
+            };
+            reader.readAsText(file);
+        }
+        
+        // 동일한 파일을 다시 선택할 수 있도록 input 값을 초기화
+        event.target.value = '';
     }
 
     init();
