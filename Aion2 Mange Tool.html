@@ -1,0 +1,1557 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>아이온2 가계부</title>
+    <style>
+        /* --- 1. 테마 변수 설정 (다크/라이트 모드 지원) --- */
+        :root {
+            --bg-color: #141619;
+            --text-color: #f1f3f5;
+            --card-bg: #1f2327;
+            --border-color: #2d3238;
+            --btn-bg: #2b3035;
+            --btn-hover: #414850;
+            --btn-disabled: #1c1f22;
+            --danger: #fa5252;
+            --warning: #fab005;
+            --primary: #228be6;
+            --success: #40c057;
+            --purple: #ae3ec9;
+            --item-bg: #181b1e;
+            --input-bg: #141619;
+            --click-bg: #25292e;
+            --click-hover: #343a40;
+            --switch-bg: #343a40;
+            --sub-text: #adb5bd;
+            
+            /* 신규 UI 컬러 */
+            --aether-basic: #20c997;
+            --aether-add: #339af0;
+        }
+
+        body.light-mode {
+            --bg-color: #f8f9fa;
+            --text-color: #212529;
+            --card-bg: #ffffff;
+            --border-color: #dee2e6;
+            --btn-bg: #f1f3f5;
+            --btn-hover: #e2e6ea;
+            --btn-disabled: #e9ecef;
+            --item-bg: #f8f9fa;
+            --input-bg: #ffffff;
+            --click-bg: #e9ecef;
+            --click-hover: #ced4da;
+            --switch-bg: #ced4da;
+            --sub-text: #495057;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 60px 25px 25px 25px; 
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* 우측 상단 아이콘 스왑 버튼 */
+        #darkModeToggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 28px;
+            transition: transform 0.2s;
+            padding: 0;
+        }
+        #darkModeToggle:hover {
+            transform: scale(1.15);
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        #recharge-timer {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--aether-basic);
+            margin-bottom: 10px;
+        }
+
+        .note {
+            font-size: 0.9rem;
+            color: #868e96;
+            margin-top: 0;
+            margin-bottom: 25px;
+        }
+
+        /* --- 상단 액션 버튼 그룹 (편집모드, 동기화) --- */
+        .top-actions-container {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .edit-mode-btn {
+            padding: 8px 16px;
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: bold;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+        }
+        .edit-mode-btn:hover {
+            background-color: #5a6268;
+        }
+        .edit-mode-btn.active {
+            background-color: var(--primary);
+        }
+        .edit-mode-btn.active:hover {
+            background-color: #1c7ed6;
+        }
+        .refresh-btn {
+            padding: 10px 20px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        .refresh-btn:hover {
+            background-color: #1c7ed6;
+        }
+
+        /* --- 글로벌 대시보드 UI --- */
+        .dashboard-top-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .dashboard-bottom-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 1024px) {
+            .dashboard-top-row { grid-template-columns: 1fr 1fr; }
+            .dashboard-top-row > div:first-child { grid-column: 1 / -1; }
+            .dashboard-bottom-row { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 600px) {
+            .dashboard-top-row, .dashboard-bottom-row { grid-template-columns: 1fr; }
+        }
+
+        .dashboard-card {
+            background: var(--item-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 16px 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .card-header h3 {
+            margin: 0;
+            font-size: 0.95rem;
+            color: var(--sub-text);
+            font-weight: 600;
+        }
+        .card-header .sub-label {
+            font-size: 0.75rem;
+            color: var(--sub-text);
+        }
+
+        /* 오드 통계 전용 */
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        .stat-value { font-size: 1.1rem; font-weight: 700; }
+        .stat-value .max { font-size: 0.85rem; color: var(--sub-text); font-weight: 500; }
+        
+        /* 420+ / 720+ 캐릭터 카드 */
+        .huge-number {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin: 5px 0 10px 0;
+            line-height: 1;
+        }
+        .char-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            min-height: 24px;
+        }
+        .char-badge {
+            background: var(--click-bg);
+            border: 1px solid var(--border-color);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            color: var(--text-color);
+        }
+
+        /* 하단 4개 카드 (원정, 초월 등) */
+        .big-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 5px;
+        }
+        .big-value .max-value { font-size: 0.9rem; color: var(--sub-text); font-weight: 500; }
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            color: var(--sub-text);
+            font-weight: 600;
+        }
+        
+        /* 공통 프로그레스 바 */
+        .progress-container {
+            width: 100%;
+            background-color: var(--click-bg);
+            border-radius: 20px;
+            height: 6px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            border-radius: 20px;
+            transition: width 0.3s ease, background-color 0.3s ease;
+        }
+
+        /* 클릭 가능한 숫자 및 체크 버튼 */
+        .action-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .clickable-num {
+            cursor: pointer;
+            color: var(--text-color);
+            user-select: none;
+            padding: 4px 10px;
+            border-radius: 6px;
+            background: var(--click-bg);
+            transition: background 0.2s;
+            display: inline-block;
+            text-align: center;
+            font-weight: 700;
+            font-size: 1.4rem;
+        }
+        .clickable-num:hover { background: var(--click-hover); }
+        .pretty-check-btn {
+            background-color: var(--btn-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .pretty-check-btn:hover {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+        
+        /* 완료 버튼 전용 추가 클래스 */
+        .complete-only-btn {
+            font-size: 1.3rem; 
+            padding: 4px 14px; 
+        }
+
+        /* 원정/초월 수동 조절 버튼 */
+        .adj-btn-group {
+            display: flex;
+            gap: 5px;
+        }
+        .adj-btn {
+            background: var(--click-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+        .adj-btn:hover {
+            background: var(--click-hover);
+        }
+
+        .warning-text { color: var(--danger) !important; }
+
+        /* --- 캐릭터 리스트 --- */
+        .char-list-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .char-row {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px 24px;
+            width: 100%;
+            box-sizing: border-box;
+            justify-content: space-between;
+            gap: 20px;
+            transition: border-color 0.2s, background-color 0.2s, opacity 0.2s;
+        }
+        .char-row:hover { border-color: var(--primary); }
+        
+        /* 드래그 앤 드랍 시 시각적 피드백 */
+        .char-row.drag-over {
+            border-top: 3px dashed var(--primary);
+            opacity: 0.8;
+            background-color: var(--click-bg);
+        }
+
+        .char-info-col {
+            display: flex;
+            align-items: center;
+            gap: 15px; 
+            min-width: 220px; 
+            flex-shrink: 0;
+        }
+
+        .job-icon-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            width: 55px; 
+        }
+
+        .job-img-container {
+            position: relative;
+            width: 45px;
+            height: 45px;
+            border-radius: 10px;
+            overflow: hidden;
+            flex-shrink: 0;
+            background-color: #000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+        }
+        .job-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .job-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0.35; pointer-events: none;
+        }
+        
+        .char-job-label {
+            font-size: 0.75rem;
+            color: #868e96;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .char-name-box { 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center;
+            gap: 6px; 
+        }
+        .char-name { 
+            font-size: 1.05rem; 
+            font-weight: 700; 
+        }
+        
+        /* --- 수동 전투력 입력 스타일 --- */
+        .cp-input-group {
+            display: flex;
+            align-items: center;
+        }
+        
+        .cp-manual-input {
+            width: 50px; /* 350.5 등 4자리 소수점에 맞게 크기 축소 */
+            padding: 2px 4px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--warning);
+            background: var(--item-bg);
+            border: 2px solid #fab005; 
+            border-radius: 6px; 
+            text-align: right;
+            outline: none;
+            transition: border-color 0.2s, background-color 0.2s, color 0.2s;
+        }
+        .cp-manual-input:focus {
+            border-color: #ffd43b;
+            background: var(--input-bg);
+        }
+        .cp-manual-input::-webkit-outer-spin-button,
+        .cp-manual-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .cp-manual-input[type=number] {
+            -moz-appearance: textfield;
+        }
+        .cp-unit {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--warning);
+            margin-left: 3px;
+            transition: color 0.2s;
+        }
+
+        /* 편집 모드가 아닐 때 전투력 읽기 전용 스타일 (노란 테두리/글씨 유지, 배경만 투명화) */
+        .cp-manual-input.readonly-mode {
+            background: transparent !important;
+            pointer-events: none; 
+        }
+
+        /* --- 변경된 오드 표시 UI --- */
+        .char-aether-col {
+            display: flex;
+            gap: 15px;
+            min-width: 200px;
+            flex-shrink: 0;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+        .char-aether-col:hover {
+            background: var(--click-bg);
+        }
+        .aether-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            align-items: center;
+            flex: 1;
+        }
+        .aether-group label {
+            font-size: 0.75rem;
+            color: #868e96;
+            font-weight: 600;
+        }
+        .stat-display-box {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            padding: 6px 0;
+            width: 80px;
+            border-radius: 6px;
+            font-weight: 700;
+            text-align: center;
+            font-size: 1rem;
+        }
+        .char-aether-col:hover .stat-display-box {
+            border-color: var(--primary);
+        }
+        .max-text {
+            font-size: 0.75rem;
+            color: var(--sub-text);
+            font-weight: normal;
+        }
+
+        .char-buttons-col {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            flex-grow: 1;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 8px 12px;
+            cursor: pointer;
+            background: var(--btn-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.15s;
+            user-select: none;
+            white-space: nowrap;
+        }
+        .action-btn:hover:not(:disabled) {
+            background: var(--btn-hover);
+            border-color: var(--sub-text);
+        }
+        .action-btn:disabled {
+            background: var(--btn-disabled);
+            color: #868e96;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .action-btn.sanctuary-btn {
+            border-color: rgba(174, 62, 201, 0.4);
+        }
+        .action-btn.sanctuary-btn:hover:not(:disabled) {
+            background: var(--purple);
+            color: white;
+            border-color: var(--purple);
+        }
+
+        .char-checks-col {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .switch-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .switch-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--sub-text);
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 38px;
+            height: 20px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: var(--switch-bg);
+            transition: .2s;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .2s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: #2b8a3e; border-color: #2b8a3e; }
+        input:checked + .slider:before { transform: translateX(18px); }
+
+        .char-nightmare-col {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 100px;
+            flex-shrink: 0;
+            justify-content: center;
+        }
+        .nightmare-title {
+            font-size: 0.85rem;
+            color: var(--sub-text);
+            font-weight: 600;
+        }
+
+        .delete-col { flex-shrink: 0; min-width: 30px; display: flex; justify-content: center; }
+        .delete-btn {
+            background: none;
+            border: none;
+            color: var(--sub-text);
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 5px;
+            border-radius: 4px;
+        }
+        .delete-btn:hover { color: var(--danger); background: var(--click-bg); }
+        
+        /* 드래그 핸들 UI */
+        .drag-handle {
+            cursor: grab;
+            font-size: 1.5rem;
+            color: var(--sub-text);
+            padding: 5px;
+            user-select: none;
+            transition: color 0.2s;
+        }
+        .drag-handle:hover {
+            color: var(--text-color);
+        }
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+
+        .add-char-section {
+            margin-top: 35px;
+            padding: 20px 25px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+        .add-char-section h3 { margin-top: 0; margin-bottom: 15px; font-size: 1.1rem; }
+        .form-group { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .add-char-section input, .add-char-section select {
+            padding: 8px 14px;
+            background: var(--input-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        .add-char-section input:focus, .add-char-section select:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+        .add-submit-btn {
+            padding: 8px 20px;
+            background: #2b8a3e;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .add-submit-btn:hover { background: #237032; }
+
+        /* --- 신규 추가: 모달(팝업) 스타일 --- */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 25px;
+            width: 320px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+        .modal-header {
+            font-size: 1.3rem;
+            font-weight: 800;
+            margin-bottom: 25px;
+            text-align: center;
+            color: var(--text-color);
+        }
+        .modal-form-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .modal-form-group label {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        .modal-input {
+            width: 90px;
+            text-align: right;
+            padding: 8px 12px;
+            background: var(--input-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+        .modal-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        .modal-input::-webkit-outer-spin-button,
+        .modal-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .modal-items-section {
+            display: flex;
+            justify-content: space-between;
+            margin: 25px 0 15px 0;
+            padding-top: 20px;
+            border-top: 1px dashed var(--border-color);
+        }
+        .item-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            width: 48%;
+        }
+        .item-card img {
+            width: 55px;
+            height: 55px;
+            object-fit: contain;
+            background: var(--click-bg);
+            border-radius: 8px;
+            padding: 5px;
+            border: 1px solid var(--border-color);
+        }
+        .item-actions {
+            display: flex;
+            width: 100%;
+            gap: 5px;
+        }
+        .item-btn {
+            flex: 1;
+            background: var(--btn-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 6px 0;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.9rem;
+            transition: all 0.15s;
+        }
+        .item-btn:hover {
+            background: var(--click-hover);
+            border-color: var(--sub-text);
+        }
+        
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+        .modal-footer button {
+            flex: 1;
+            padding: 12px;
+            border-radius: 6px;
+            border: none;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        .btn-cancel {
+            background: var(--btn-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+        }
+        .btn-save {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-cancel:hover { background: var(--btn-hover); }
+        .btn-save:hover { background: #1c7ed6; }
+    </style>
+</head>
+<body>
+
+    <button id="darkModeToggle">☀️</button>
+
+    <h1>아이온2 가계부</h1>
+    <div id="recharge-timer">기본 오드 자연 충전까지 남은 시간: 00:00:00</div>
+    <p class="note">※ 모든 소모/차감 액션은 <b>좌클릭</b>, 실수로 잘못 누른 액션의 취소/복구는 <b>우클릭</b>을 사용하세요.</p>
+
+    <!-- 편집 모드 및 동기화 버튼 -->
+    <div class="top-actions-container">
+        <button id="editModeToggleBtn" class="edit-mode-btn" onclick="toggleEditMode()">🔧 편집 모드 (꺼짐)</button>
+        <button class="refresh-btn" onclick="manualTimePass()">🔄 시간 경과 즉시 동기화 및 새로고침</button>
+    </div>
+
+    <!-- 신규 대시보드 구조 적용 -->
+    <div class="global-dashboard-wrapper">
+        
+        <!-- 상단: 오드 종합 정보 -->
+        <div class="dashboard-top-row">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h3>총 보유 오드</h3>
+                </div>
+                <div>
+                    <div class="stat-row">
+                        <span style="color: var(--aether-basic);">기본오드</span>
+                        <span class="stat-value" id="global-basic-text">0 <span class="max">/ 0</span></span>
+                    </div>
+                    <div class="progress-container" style="margin-bottom: 15px;">
+                        <div class="progress-bar" id="global-basic-bar" style="background-color: var(--aether-basic);"></div>
+                    </div>
+                    <div class="stat-row">
+                        <span style="color: var(--aether-add);">추가오드</span>
+                        <span class="stat-value" id="global-add-text">0 <span class="max">/ 0</span></span>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar" id="global-add-bar" style="background-color: var(--aether-add);"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h3>기본오드 420+</h3>
+                </div>
+                <div class="huge-number" id="count-420" style="color: var(--aether-add);">0</div>
+                <div class="char-badges" id="list-420"></div>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h3>기본오드 720+</h3>
+                </div>
+                <div class="huge-number" id="count-720" style="color: var(--danger);">0</div>
+                <div class="char-badges" id="list-720"></div>
+            </div>
+        </div>
+
+        <!-- 하단: 행동 횟수 정보 -->
+        <div class="dashboard-bottom-row">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h3>원정</h3>
+                    <span class="sub-label">주간 실행 횟수</span>
+                </div>
+                <div class="big-value">
+                    <div id="total-exp-display">0 <span class="max-value">/ 84회</span></div>
+                    <div class="adj-btn-group">
+                        <button class="adj-btn" onclick="adjustTotal('exp', -1)">-</button>
+                        <button class="adj-btn" onclick="adjustTotal('exp', 1)">+</button>
+                    </div>
+                </div>
+                <div class="progress-container"><div class="progress-bar" id="exp-bar" style="background-color: var(--text-color);"></div></div>
+                <div class="card-footer">
+                    <span id="exp-pct">진행률 0%</span>
+                    <span id="exp-remain">84회 여유</span>
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h3>초월</h3>
+                    <span class="sub-label">주간 실행 횟수</span>
+                </div>
+                <div class="big-value">
+                    <div id="total-trans-display">0 <span class="max-value">/ 56회</span></div>
+                    <div class="adj-btn-group">
+                        <button class="adj-btn" onclick="adjustTotal('trans', -1)">-</button>
+                        <button class="adj-btn" onclick="adjustTotal('trans', 1)">+</button>
+                    </div>
+                </div>
+                <div class="progress-container"><div class="progress-bar" id="trans-bar" style="background-color: var(--text-color);"></div></div>
+                <div class="card-footer">
+                    <span id="trans-pct">진행률 0%</span>
+                    <span id="trans-remain">56회 여유</span>
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h3>슈고</h3>
+                    <span class="sub-label">남은 기본 + 추가 티켓</span>
+                </div>
+                <div class="action-flex">
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <span id="shugo-count" class="clickable-num" title="기본 티켓 (좌클릭- / 우클릭+)" oncontextmenu="handleGlobalClick('shugo', true, event)" onclick="handleGlobalClick('shugo', false, event)">14</span>
+                        <span style="font-weight: 800; color: var(--sub-text);">+</span>
+                        <span id="shugo-extra-count" class="clickable-num" style="color: var(--aether-add);" title="추가 티켓 (좌클릭+ / 우클릭-)" oncontextmenu="handleGlobalExtraClick('shugo', false, event)" onclick="handleGlobalExtraClick('shugo', true, event)">0</span>
+                    </div>
+                    <button class="pretty-check-btn complete-only-btn" onclick="deductGlobalOne('shugo')">✓</button>
+                </div>
+                <div class="progress-container"><div class="progress-bar" id="shugo-bar" style="background-color: var(--text-color);"></div></div>
+                <div class="card-footer">
+                    <span id="shugo-pct">잔여 100%</span>
+                    <span>/ 14장</span>
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h3>침공</h3>
+                    <span class="sub-label">남은 기본 + 추가 티켓</span>
+                </div>
+                <div class="action-flex">
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <span id="invasion-count" class="clickable-num" title="기본 티켓 (좌클릭- / 우클릭+)" oncontextmenu="handleGlobalClick('invasion', true, event)" onclick="handleGlobalClick('invasion', false, event)">7</span>
+                        <span style="font-weight: 800; color: var(--sub-text);">+</span>
+                        <span id="invasion-extra-count" class="clickable-num" style="color: var(--aether-add);" title="추가 티켓 (좌클릭+ / 우클릭-)" oncontextmenu="handleGlobalExtraClick('invasion', false, event)" onclick="handleGlobalExtraClick('invasion', true, event)">0</span>
+                    </div>
+                    <button class="pretty-check-btn complete-only-btn" onclick="deductGlobalOne('invasion')">✓</button>
+                </div>
+                <div class="progress-container"><div class="progress-bar" id="invasion-bar" style="background-color: var(--text-color);"></div></div>
+                <div class="card-footer">
+                    <span id="invasion-pct">잔여 100%</span>
+                    <span>/ 7장</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="char-list-container" id="char-list">
+    </div>
+
+    <div class="add-char-section">
+        <h3>새 캐릭터 등록</h3>
+        <div class="form-group">
+            <input type="text" id="new-char-name" placeholder="캐릭터 이름을 입력하세요">
+            <select id="new-char-job">
+                <option value="검성">검성</option>
+                <option value="수호성">수호성</option>
+                <option value="정령성">정령성</option>
+                <option value="살성">살성</option>
+                <option value="궁성">궁성</option>
+                <option value="마도성">마도성</option>
+                <option value="호법성">호법성</option>
+                <option value="치유성">치유성</option>
+                <option value="권성">권성</option>
+            </select>
+            <button class="add-submit-btn" onclick="addCharacter()">캐릭터 추가</button>
+        </div>
+    </div>
+
+    <!-- 오드 조절 모달 -->
+    <div id="aetherModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header" id="modal-char-name">캐릭터 이름</div>
+            
+            <div class="modal-form-group">
+                <label>기본 오드</label>
+                <input type="number" id="modal-basic-input" class="modal-input" max="840" min="0">
+            </div>
+            
+            <div class="modal-form-group">
+                <label style="color: var(--aether-add);">추가 오드</label>
+                <input type="number" id="modal-add-input" class="modal-input" max="2000" min="0">
+            </div>
+
+            <div class="modal-items-section">
+                <div class="item-card">
+                    <img src="smallodd.webp" alt="작은 오드 에너지">
+                    <div class="item-actions">
+                        <button type="button" class="item-btn" onclick="adjustModalAddAether(-10)">-10</button>
+                        <button type="button" class="item-btn" onclick="adjustModalAddAether(10)">+10</button>
+                    </div>
+                </div>
+                <div class="item-card">
+                    <img src="odd.webp" alt="오드 에너지">
+                    <div class="item-actions">
+                        <button type="button" class="item-btn" onclick="adjustModalAddAether(-40)">-40</button>
+                        <button type="button" class="item-btn" onclick="adjustModalAddAether(40)">+40</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeAetherModal()">취소</button>
+                <button type="button" class="btn-save" onclick="saveAetherModal()">저장</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+    // --- 다크모드/라이트모드 토글 스크립트 ---
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    if (document.body.classList.contains('light-mode')) {
+        darkModeToggle.innerHTML = '🌙';
+    } else {
+        darkModeToggle.innerHTML = '☀️';
+    }
+
+    darkModeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('light-mode');
+        if (document.body.classList.contains('light-mode')) {
+            darkModeToggle.innerHTML = '🌙'; 
+        } else {
+            darkModeToggle.innerHTML = '☀️'; 
+        }
+    });
+
+    const jobColors = {
+        '검성': '#868e96', '수호성': '#228be6', '정령성': '#9c27b0', '살성': '#2b8a3e',
+        '궁성': '#66a80f', '마도성': '#7048e8', '호법성': '#f59f00', '치유성': '#fcc419', '권성': '#e03131'
+    };
+
+    const defaultData = {
+        shugo: 14,
+        shugoExtra: 0,
+        invasion: 7,
+        invasionExtra: 0,
+        totalExp: 0,
+        totalTrans: 0,
+        lastCheckTime: Date.now(),
+        characters: []
+    };
+
+    let appData = JSON.parse(localStorage.getItem('aion2_refined_data')) || defaultData;
+    
+    // 기존 유저 데이터 호환성 보장
+    if(appData.shugoExtra === undefined) appData.shugoExtra = 0;
+    if(appData.invasionExtra === undefined) appData.invasionExtra = 0;
+    appData.characters.forEach(char => {
+        if(char.combatPower === undefined || char.combatPower === '-') char.combatPower = '';
+    });
+
+    let currentModalCharIndex = -1;
+    let isEditMode = false;       // 신규 추가: 편집 모드 상태
+    let dragStartIndex = -1;      // 신규 추가: 드래그 앤 드랍 인덱스 기록용
+
+    function init() {
+        checkAutoResets();
+        render();
+        startRechargeTimer(); 
+    }
+    
+    // --- 편집 모드 토글 함수 ---
+    function toggleEditMode() {
+        isEditMode = !isEditMode;
+        const btn = document.getElementById('editModeToggleBtn');
+        if(isEditMode) {
+            btn.innerHTML = '🔧 편집 모드 (켜짐)';
+            btn.classList.add('active');
+        } else {
+            btn.innerHTML = '🔧 편집 모드 (꺼짐)';
+            btn.classList.remove('active');
+        }
+        render();
+    }
+
+    // --- 드래그 앤 드랍 관련 함수 ---
+    function handleDragStart(event, index) {
+        dragStartIndex = index;
+        event.dataTransfer.effectAllowed = 'move';
+    }
+    function handleDragOver(event) {
+        event.preventDefault(); 
+        event.dataTransfer.dropEffect = 'move';
+    }
+    function handleDragEnter(event) {
+        event.preventDefault();
+        event.currentTarget.classList.add('drag-over');
+    }
+    function handleDragLeave(event) {
+        event.currentTarget.classList.remove('drag-over');
+    }
+    function handleDrop(event, dropIndex) {
+        event.preventDefault();
+        event.currentTarget.classList.remove('drag-over');
+        
+        if (dragStartIndex === -1 || dragStartIndex === dropIndex) return;
+
+        // 배열 순서 스왑 로직
+        const draggedItem = appData.characters.splice(dragStartIndex, 1)[0];
+        appData.characters.splice(dropIndex, 0, draggedItem);
+        
+        dragStartIndex = -1;
+        saveData();
+        render();
+    }
+
+    // 전투력 수동 입력 반영 로직
+    function updateCombatPower(index, value) {
+        let num = parseFloat(value);
+        if (!isNaN(num)) {
+            // 입력된 숫자를 무조건 소수점 첫 번째 자리까지로 변환해서 저장
+            appData.characters[index].combatPower = num.toFixed(1); 
+        } else {
+            appData.characters[index].combatPower = '';
+        }
+        saveData();
+        render();
+    }
+
+    // 1초 단위 타이머 및 자동 동기화 로직
+    function startRechargeTimer() {
+        updateTimer();
+        setInterval(updateTimer, 1000);
+    }
+
+    function updateTimer() {
+        const now = Date.now();
+        const KST_OFFSET = 9 * 3600 * 1000;
+        
+        let currentBlock = Math.floor((now + KST_OFFSET + 3600 * 1000) / (3 * 3600 * 1000));
+        let nextBlockTime = (currentBlock + 1) * (3 * 3600 * 1000) - KST_OFFSET - 3600 * 1000;
+        let diffMs = nextBlockTime - now;
+        
+        let diffS = Math.floor(diffMs / 1000);
+        let h = Math.floor(diffS / 3600);
+        let m = Math.floor((diffS % 3600) / 60);
+        let s = diffS % 60;
+        
+        let timerElem = document.getElementById('recharge-timer');
+        if (timerElem) {
+            timerElem.innerText = `기본 오드 자연 충전까지 남은 시간: ${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+        
+        let last = appData.lastCheckTime;
+        let last3HBlock = Math.floor((last + KST_OFFSET + 3600 * 1000) / (3 * 3600 * 1000));
+        
+        if (currentBlock > last3HBlock) {
+            manualTimePass(); 
+        }
+    }
+
+    function saveData() {
+        localStorage.setItem('aion2_refined_data', JSON.stringify(appData));
+    }
+
+    function render() {
+        let totalBasic = 0, totalAdd = 0;
+        let charCount = appData.characters.length;
+        let maxBasic = charCount * 840;
+        let maxAdd = charCount * 2000;
+        let chars420 = [];
+        let chars720 = [];
+
+        appData.characters.forEach(char => {
+            totalBasic += char.basicAether;
+            totalAdd += char.addAether;
+            
+            if(char.basicAether >= 420) chars420.push(char.name);
+            if(char.basicAether >= 720) chars720.push(char.name);
+        });
+
+        document.getElementById('global-basic-text').innerHTML = `${totalBasic.toLocaleString()} <span class="max">/ ${maxBasic.toLocaleString()}</span>`;
+        document.getElementById('global-add-text').innerHTML = `${totalAdd.toLocaleString()} <span class="max">/ ${maxAdd.toLocaleString()}</span>`;
+        
+        let basicPct = maxBasic > 0 ? (totalBasic / maxBasic) * 100 : 0;
+        let addPct = maxAdd > 0 ? (totalAdd / maxAdd) * 100 : 0;
+        document.getElementById('global-basic-bar').style.width = `${basicPct}%`;
+        document.getElementById('global-add-bar').style.width = `${addPct}%`;
+
+        document.getElementById('count-420').innerText = chars420.length;
+        document.getElementById('list-420').innerHTML = chars420.map(name => `<span class="char-badge">${name}</span>`).join('');
+        
+        document.getElementById('count-720').innerText = chars720.length;
+        document.getElementById('list-720').innerHTML = chars720.map(name => `<span class="char-badge">${name}</span>`).join('');
+        document.getElementById('count-720').style.color = chars720.length > 0 ? 'var(--danger)' : 'var(--sub-text)';
+
+        let expPct = Math.min(100, (appData.totalExp / 84) * 100);
+        let remainExp = Math.max(0, 84 - appData.totalExp);
+        document.getElementById('total-exp-display').innerHTML = `${appData.totalExp} <span class="max-value">/ 84회</span>`;
+        document.getElementById('exp-bar').style.width = `${expPct}%`;
+        document.getElementById('exp-bar').style.backgroundColor = appData.totalExp > 84 ? 'var(--danger)' : 'var(--text-color)';
+        document.getElementById('exp-pct').innerText = `진행률 ${expPct.toFixed(1)}%`;
+        document.getElementById('exp-remain').innerText = `${remainExp}회 여유`;
+
+        let transPct = Math.min(100, (appData.totalTrans / 56) * 100);
+        let remainTrans = Math.max(0, 56 - appData.totalTrans);
+        document.getElementById('total-trans-display').innerHTML = `${appData.totalTrans} <span class="max-value">/ 56회</span>`;
+        document.getElementById('trans-bar').style.width = `${transPct}%`;
+        document.getElementById('trans-bar').style.backgroundColor = appData.totalTrans > 56 ? 'var(--danger)' : 'var(--text-color)';
+        document.getElementById('trans-pct').innerText = `진행률 ${transPct.toFixed(1)}%`;
+        document.getElementById('trans-remain').innerText = `${remainTrans}회 여유`;
+
+        document.getElementById('shugo-count').innerText = appData.shugo;
+        document.getElementById('shugo-extra-count').innerText = appData.shugoExtra;
+        let shugoPct = (appData.shugo / 14) * 100;
+        document.getElementById('shugo-bar').style.width = `${shugoPct}%`;
+        document.getElementById('shugo-pct').innerText = `잔여 ${shugoPct.toFixed(0)}%`;
+
+        document.getElementById('invasion-count').innerText = appData.invasion;
+        document.getElementById('invasion-extra-count').innerText = appData.invasionExtra;
+        let invPct = (appData.invasion / 7) * 100;
+        document.getElementById('invasion-bar').style.width = `${invPct}%`;
+        document.getElementById('invasion-pct').innerText = `잔여 ${invPct.toFixed(0)}%`;
+
+        const listContainer = document.getElementById('char-list');
+        listContainer.innerHTML = '';
+
+        appData.characters.forEach((char, index) => {
+            const totalAether = char.basicAether + char.addAether;
+            
+            const dExp80 = totalAether < 80 ? 'disabled' : '';
+            const dExp120 = totalAether < 120 ? 'disabled' : '';
+            const dTrans80 = totalAether < 80 ? 'disabled' : '';
+            const dTrans120 = totalAether < 120 ? 'disabled' : '';
+            const dSanc160 = totalAether < 160 ? 'disabled' : '';
+
+            const imgSrc = char.job === '권성' ? '권성.png' : `${char.job}.webp`;
+            const overlayColor = jobColors[char.job];
+            
+            // 기존 데이터 호환을 위해 K 문자열을 치환
+            let rawCpValue = char.combatPower ? char.combatPower.toString().replace('K', '') : '';
+            
+            // 편집 모드 여부에 따른 상태 변경 및 우측 끝 요소 처리
+            const cpClass = isEditMode ? 'cp-manual-input' : 'cp-manual-input readonly-mode';
+            const cpReadonly = isEditMode ? '' : 'readonly';
+            const rightEndElement = isEditMode 
+                ? `<button class="delete-btn" onclick="deleteCharacter(${index})" title="캐릭터 정보 제거">✖</button>`
+                : `<div class="drag-handle" title="드래그 앤 드랍으로 순서 변경">☰</div>`;
+
+            const row = document.createElement('div');
+            row.className = 'char-row';
+            
+            // 편집모드가 아닐 때만 드래그 앤 드랍 활성화
+            if(!isEditMode) {
+                row.draggable = true;
+                row.ondragstart = (e) => handleDragStart(e, index);
+                row.ondragover = handleDragOver;
+                row.ondragenter = handleDragEnter;
+                row.ondragleave = handleDragLeave;
+                row.ondrop = (e) => handleDrop(e, index);
+            }
+
+            // --- 아이콘 및 정보 표시부 변경됨 ---
+            row.innerHTML = `
+                <div class="char-info-col">
+                    <div class="job-icon-group">
+                        <div class="job-img-container">
+                            <img src="${imgSrc}" class="job-img" alt="${char.job}">
+                            <div class="job-overlay" style="background-color: ${overlayColor};"></div>
+                        </div>
+                        <span class="char-job-label">${char.job}</span>
+                    </div>
+                    
+                    <div class="char-name-box">
+                        <span class="char-name">${char.name}</span>
+                        <div class="cp-input-group">
+                            <input type="number" step="0.1" class="${cpClass}" ${cpReadonly} value="${rawCpValue}" onblur="updateCombatPower(${index}, this.value)" placeholder="0.0">
+                            <span class="cp-unit">K</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="char-aether-col" onclick="openAetherModal(${index})" title="오드 에너지를 눌러 조절하기">
+                    <div class="aether-group">
+                        <label>기본 오드</label>
+                        <div class="stat-display-box">${char.basicAether} <span class="max-text">/ 840</span></div>
+                    </div>
+                    <div class="aether-group">
+                        <label style="color: var(--aether-add);">추가 오드</label>
+                        <div class="stat-display-box" style="color: var(--aether-add); border-color: rgba(51, 154, 240, 0.4);">${char.addAether} <span class="max-text">/ 2000</span></div>
+                    </div>
+                </div>
+
+                <div class="char-buttons-col">
+                    <button class="action-btn" ${dExp80} oncontextmenu="spendAether(${index}, 80, 'exp', true, event)" onclick="spendAether(${index}, 80, 'exp', false, event)">원정(80)</button>
+                    <button class="action-btn" ${dExp120} oncontextmenu="spendAether(${index}, 120, 'exp', true, event)" onclick="spendAether(${index}, 120, 'exp', false, event)">원정(120)</button>
+                    <button class="action-btn" ${dTrans80} oncontextmenu="spendAether(${index}, 80, 'trans', true, event)" onclick="spendAether(${index}, 80, 'trans', false, event)">초월(80)</button>
+                    <button class="action-btn" ${dTrans120} oncontextmenu="spendAether(${index}, 120, 'trans', true, event)" onclick="spendAether(${index}, 120, 'trans', false, event)">초월(120)</button>
+                    <button class="action-btn sanctuary-btn" ${dSanc160} oncontextmenu="spendAether(${index}, 160, 'sanc', true, event)" onclick="spendAether(${index}, 160, 'sanc', false, event)">성역</button>
+                </div>
+
+                <div class="char-checks-col">
+                    <div class="switch-container">
+                        <span class="switch-title">회랑</span>
+                        <label class="switch">
+                            <input type="checkbox" ${char.corridor ? 'checked' : ''} onchange="toggleCheck(${index}, 'corridor')">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="switch-container">
+                        <span class="switch-title">각성</span>
+                        <label class="switch">
+                            <input type="checkbox" ${char.awakening ? 'checked' : ''} onchange="toggleCheck(${index}, 'awakening')">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="char-nightmare-col">
+                    <span class="nightmare-title">악몽:</span>
+                    <span class="clickable-num" oncontextmenu="handleNightmare(${index}, true, event)" onclick="handleNightmare(${index}, false, event)">${char.nightmare}</span>
+                </div>
+
+                <div class="delete-col">
+                    ${rightEndElement}
+                </div>
+            `;
+            listContainer.appendChild(row);
+        });
+    }
+
+    function openAetherModal(index) {
+        currentModalCharIndex = index;
+        let char = appData.characters[index];
+        
+        document.getElementById('modal-char-name').innerText = char.name + " 오드";
+        document.getElementById('modal-basic-input').value = char.basicAether;
+        document.getElementById('modal-add-input').value = char.addAether;
+        
+        document.getElementById('aetherModal').style.display = 'flex';
+    }
+
+    function closeAetherModal() {
+        document.getElementById('aetherModal').style.display = 'none';
+        currentModalCharIndex = -1;
+    }
+
+    function adjustModalAddAether(amount) {
+        let inputElem = document.getElementById('modal-add-input');
+        let currentVal = parseInt(inputElem.value) || 0;
+        let newVal = Math.min(2000, Math.max(0, currentVal + amount));
+        inputElem.value = newVal;
+    }
+
+    function saveAetherModal() {
+        if (currentModalCharIndex === -1) return;
+        
+        let basicVal = parseInt(document.getElementById('modal-basic-input').value) || 0;
+        let addVal = parseInt(document.getElementById('modal-add-input').value) || 0;
+        
+        appData.characters[currentModalCharIndex].basicAether = Math.min(840, Math.max(0, basicVal));
+        appData.characters[currentModalCharIndex].addAether = Math.min(2000, Math.max(0, addVal));
+        
+        saveData();
+        render();
+        closeAetherModal();
+    }
+
+
+    function addCharacter() {
+        const nameIn = document.getElementById('new-char-name');
+        const jobIn = document.getElementById('new-char-job');
+        
+        if (!nameIn.value.trim()) return alert("캐릭터의 이름을 올바르게 입력해주세요.");
+
+        appData.characters.push({
+            name: nameIn.value.trim(),
+            job: jobIn.value,
+            basicAether: 840,
+            addAether: 0,
+            corridor: false,
+            awakening: false,
+            nightmare: 14,
+            combatPower: '' 
+        });
+
+        nameIn.value = '';
+        saveData();
+        render();
+    }
+
+    function deleteCharacter(index) {
+        if(confirm("해당 캐릭터 정보를 삭제하시겠습니까? 데이터는 즉시 유실됩니다.")) {
+            appData.characters.splice(index, 1);
+            saveData();
+            render();
+        }
+    }
+
+    function toggleCheck(charIndex, field) {
+        appData.characters[charIndex][field] = !appData.characters[charIndex][field];
+        saveData();
+    }
+
+    function handleNightmare(charIndex, isRight, event) {
+        event.preventDefault();
+        let char = appData.characters[charIndex];
+        if (isRight) {
+            if (char.nightmare < 14) char.nightmare++;
+        } else {
+            if (char.nightmare > 0) char.nightmare--;
+        }
+        saveData();
+        render();
+    }
+
+    function handleGlobalClick(type, isRight, event) {
+        event.preventDefault();
+        if(type === 'shugo') {
+            if(isRight) appData.shugo = Math.min(14, appData.shugo + 1);
+            else appData.shugo = Math.max(0, appData.shugo - 1);
+        } else if (type === 'invasion') {
+            if(isRight) appData.invasion = Math.min(7, appData.invasion + 1);
+            else appData.invasion = Math.max(0, appData.invasion - 1);
+        }
+        saveData();
+        render();
+    }
+
+    function handleGlobalExtraClick(type, isIncrease, event) {
+        event.preventDefault();
+        if(type === 'shugo') {
+            if(isIncrease) appData.shugoExtra++;
+            else appData.shugoExtra = Math.max(0, appData.shugoExtra - 1);
+        } else if (type === 'invasion') {
+            if(isIncrease) appData.invasionExtra++;
+            else appData.invasionExtra = Math.max(0, appData.invasionExtra - 1);
+        }
+        saveData();
+        render();
+    }
+
+    function deductGlobalOne(type) {
+        if(type === 'shugo') {
+            if(appData.shugo > 0) {
+                appData.shugo--;
+            } else if (appData.shugoExtra > 0) {
+                appData.shugoExtra--;
+            }
+        } else if(type === 'invasion') {
+            if(appData.invasion > 0) {
+                appData.invasion--;
+            } else if (appData.invasionExtra > 0) {
+                appData.invasionExtra--;
+            }
+        }
+        saveData();
+        render();
+    }
+
+    function adjustTotal(type, amount) {
+        if(type === 'exp') {
+            appData.totalExp = Math.max(0, appData.totalExp + amount);
+        } else if (type === 'trans') {
+            appData.totalTrans = Math.max(0, appData.totalTrans + amount);
+        }
+        saveData();
+        render();
+    }
+
+    function spendAether(charIndex, cost, type, isRight, event) {
+        event.preventDefault();
+        let char = appData.characters[charIndex];
+
+        if (!isRight) { 
+            if (char.basicAether + char.addAether < cost) return; 
+
+            if (char.basicAether >= cost) {
+                char.basicAether -= cost;
+            } else {
+                let diff = cost - char.basicAether;
+                char.basicAether = 0;
+                char.addAether -= diff;
+            }
+
+            if (type === 'exp') appData.totalExp++;
+            if (type === 'trans') appData.totalTrans++;
+
+        } else { 
+            let emptyBasic = 840 - char.basicAether;
+            if (cost <= emptyBasic) {
+                char.basicAether += cost;
+            } else {
+                char.basicAether = 840;
+                char.addAether = Math.min(2000, char.addAether + (cost - emptyBasic));
+            }
+
+            if (type === 'exp' && appData.totalExp > 0) appData.totalExp--;
+            if (type === 'trans' && appData.totalTrans > 0) appData.totalTrans--;
+        }
+
+        saveData();
+        render();
+    }
+
+    function checkAutoResets() {
+        const now = Date.now();
+        let last = appData.lastCheckTime;
+        
+        if (now <= last) {
+            appData.lastCheckTime = now;
+            saveData();
+            return;
+        }
+
+        const KST_OFFSET = 9 * 60 * 60 * 1000;
+        
+        let lastKST = new Date(last + KST_OFFSET);
+        let nowKST = new Date(now + KST_OFFSET);
+        
+        let last3HBlock = Math.floor((last + KST_OFFSET + 3600 * 1000) / (3 * 3600 * 1000));
+        let now3HBlock = Math.floor((now + KST_OFFSET + 3600 * 1000) / (3 * 3600 * 1000));
+        let odedTicks = now3HBlock - last3HBlock;
+        
+        if (odedTicks > 0) {
+            appData.characters.forEach(char => {
+                char.basicAether = Math.min(840, char.basicAether + (15 * odedTicks));
+            });
+        }
+
+        let last5AMBlock = Math.floor((last + KST_OFFSET - 5 * 3600 * 1000) / (24 * 3600 * 1000));
+        let now5AMBlock = Math.floor((now + KST_OFFSET - 5 * 3600 * 1000) / (24 * 3600 * 1000));
+        let dailyTicks = now5AMBlock - last5AMBlock;
+        
+        if (dailyTicks > 0) {
+            appData.shugo = Math.min(14, appData.shugo + (2 * dailyTicks));
+            appData.invasion = Math.min(7, appData.invasion + (1 * dailyTicks));
+            appData.characters.forEach(char => {
+                char.nightmare = Math.min(14, char.nightmare + (2 * dailyTicks));
+            });
+        }
+
+        let hoursGap = Math.floor((nowKST.getTime() - lastKST.getTime()) / (3600 * 1000));
+        if (hoursGap > 0) {
+            if (hoursGap > 24 * 14) { 
+                appData.characters.forEach(char => {
+                    char.awakening = false;
+                    char.corridor = false;
+                });
+            } else {
+                for (let h = 1; h <= hoursGap; h++) {
+                    let timeline = new Date(lastKST.getTime() + h * 3600 * 1000);
+                    let d = timeline.getUTCDay();
+                    let hr = timeline.getUTCHours();
+                    
+                    if (d === 3 && hr === 10) {
+                        appData.characters.forEach(char => char.awakening = false);
+                    }
+                    if ((d === 3 && hr === 22) || (d === 6 && hr === 22)) {
+                        appData.characters.forEach(char => char.corridor = false);
+                    }
+                }
+            }
+        }
+
+        appData.lastCheckTime = now;
+        saveData();
+    }
+
+    function manualTimePass() {
+        checkAutoResets();
+        location.reload();
+    }
+
+    init();
+</script>
+</body>
+</html>
