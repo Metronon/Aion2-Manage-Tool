@@ -1590,7 +1590,7 @@
         
         const filename = `${yyyy}-${MM}-${dd}-${HH}-${mm}-${ss}_aion2_manage_backup.txt`;
         
-        // 텍스트 파일로 다운로드 (다른 이름으로 저장하기 창 트리거)
+        // 텍스트 파일로 다운로드 (다른 이름으로 저장하기 창 트리거 ) 
         const blob = new Blob([data], { type: 'text/plain' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
