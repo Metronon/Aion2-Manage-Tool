@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>아이온2 가계부</title>
+    <title>아이온2 관리 도구</title>
     <style>
         /* --- 1. 테마 변수 설정 (다크/라이트 모드 지원) --- */
         :root {
@@ -430,9 +430,18 @@
             justify-content: center;
             gap: 6px; 
         }
+
+        /* 닉네임 하이퍼링크 스타일 설정 */
         .char-name { 
             font-size: 1.05rem; 
             font-weight: 700; 
+            text-decoration: none;
+            color: inherit;
+            transition: color 0.2s;
+        }
+        .char-name:hover {
+            color: var(--primary);
+            text-decoration: underline;
         }
         
         /* --- 수동 전투력 입력 스타일 --- */
@@ -621,8 +630,8 @@
         }
 
         .char-nightmare-col .clickable-num {
-            width: 48px;        /* 2자리 숫자가 여유롭게 들어가는 고정 크기 */
-            padding: 4px 0;     /* 가로 패딩을 0으로 만들어 글자가 정확히 중앙에 오도록 설정 */
+            width: 48px;        
+            padding: 4px 0;     
             box-sizing: border-box;
             display: inline-block;
         }
@@ -844,7 +853,7 @@
 
     <button id="darkModeToggle">☀️</button>
 
-    <h1>아이온2 가계부</h1>
+    <h1>아이온2 관리 도구</h1>
     <div id="recharge-timer">기본 오드 자연 충전까지 남은 시간: 00:00:00</div>
     <p class="note">※ 모든 소모/차감 액션은 <b>좌클릭</b>, 실수로 잘못 누른 액션의 취소/복구는 <b>우클릭</b>을 사용하세요.</p>
 
@@ -1299,7 +1308,7 @@
                 row.ondrop = (e) => handleDrop(e, index);
             }
 
-            // --- 아이콘 및 정보 표시부 변경됨 ---
+            // --- 아이콘 및 정보 표시부 (a태그 하이퍼링크 적용됨) ---
             row.innerHTML = `
                 <div class="char-info-col">
                     <div class="job-icon-group">
@@ -1311,7 +1320,7 @@
                     </div>
                     
                     <div class="char-name-box">
-                        <span class="char-name">${char.name}</span>
+                        <a href="https://aion2tool.com/char/serverid=1006/${char.name}" target="_blank" class="char-name" title="캐릭터 정보 보기">${char.name}</a>
                         <div class="cp-input-group">
                             <input type="number" step="0.1" class="${cpClass}" ${cpReadonly} value="${rawCpValue}" onblur="updateCombatPower(${index}, this.value)" placeholder="0.0">
                             <span class="cp-unit">K</span>
