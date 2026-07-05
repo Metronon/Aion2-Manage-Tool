@@ -812,6 +812,25 @@
         }
         .btn-cancel:hover { background: var(--btn-hover); }
         .btn-save:hover { background: #1c7ed6; }
+
+        /* --- 악몽 횟수 프로그레스 바 관련 스타일 --- */
+        .nightmare-box-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .nm-progress-container {
+            width: 100%;
+            background-color: var(--click-bg);
+            border-radius: 10px;
+            height: 5px;
+            overflow: hidden;
+        }
+        .nm-progress-bar {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.3s ease, background-color 0.3s ease;
+        }
     </style>
 </head>
 <body>
@@ -1246,6 +1265,20 @@
                 ? `<button class="delete-btn" onclick="deleteCharacter(${index})" title="캐릭터 정보 제거">✖</button>`
                 : `<div class="drag-handle" title="드래그 앤 드랍으로 순서 변경">☰</div>`;
 
+            // 악몽 횟수에 따른 색상 및 퍼센트 계산
+            let nm = char.nightmare;
+            let nmColor = 'var(--text-color)'; 
+            if (nm >= 6 && nm <= 9) {
+                nmColor = 'var(--warning)'; // 노란색
+            } else if (nm >= 10 && nm <= 13) {
+                nmColor = '#fd7e14'; // 주황색
+            } else if (nm === 14) {
+                nmColor = 'var(--danger)'; // 빨간색
+            }
+            
+            // 14회 기준 잔여 퍼센트
+            let nmPct = (nm / 14) * 100;
+
             const row = document.createElement('div');
             row.className = 'char-row';
             
@@ -1317,7 +1350,12 @@
 
                 <div class="char-nightmare-col">
                     <span class="nightmare-title">악몽:</span>
-                    <span class="clickable-num" oncontextmenu="handleNightmare(${index}, true, event)" onclick="handleNightmare(${index}, false, event)">${char.nightmare}</span>
+                    <div class="nightmare-box-wrapper">
+                        <span class="clickable-num" style="color: ${nmColor};" oncontextmenu="handleNightmare(${index}, true, event)" onclick="handleNightmare(${index}, false, event)">${char.nightmare}</span>
+                        <div class="nm-progress-container">
+                            <div class="nm-progress-bar" style="width: ${nmPct}%; background-color: ${nmColor};"></div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="delete-col">
