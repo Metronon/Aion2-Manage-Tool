@@ -348,31 +348,56 @@
 
         .warning-text { color: var(--danger) !important; }
 
-        /* --- 캐릭터 리스트 --- */
-        .char-list-container {
+        /* --- 그리드 기반 캐릭터 리스트 레이아웃 --- */
+        .char-list-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            padding-bottom: 15px;
+        }
+        .char-list-inner {
+            /* 피벗 모니터 꽉 차게 적응형으로 변경. 스크롤바 방지 */
+            width: 100%; 
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            width: 100%;
+            gap: 10px;
         }
 
-        .char-row {
-            display: flex;
-            flex-direction: row;
+        /* 공통 그리드 템플릿 (헤더 & 개별 캐릭터 행 완전 일치) */
+        /* 비율(fr) 기반 할당으로 해상도에 맞게 자동 리사이징 */
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1.6fr 0.6fr 0.6fr 1.3fr 0.8fr 0.8fr 2.5fr 0.5fr 1.1fr 0.7fr 0.5fr;
             align-items: center;
+            gap: 6px; /* 좁은 모니터를 위해 간격 최적화 */
+        }
+
+        /* 반응형: 모바일 등 극단적으로 좁은 환경에서는 스크롤 허용 */
+        @media (max-width: 900px) {
+            .char-list-inner { min-width: 900px; }
+        }
+
+        .char-list-header {
+            padding: 10px 12px;
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 10px;
-            padding: 12px 24px;
-            width: 100%;
+            font-weight: 700;
+            font-size: 0.8rem; /* 폰트 약간 조정 */
+            color: var(--sub-text);
+            text-align: center;
+            word-break: keep-all; /* 줄바꿈 허용 */
+        }
+
+        .char-row {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 10px 12px;
             box-sizing: border-box;
-            justify-content: space-between;
-            gap: 20px;
             transition: border-color 0.2s, background-color 0.2s, opacity 0.2s;
         }
         .char-row:hover { border-color: var(--primary); }
         
-        /* 드래그 앤 드랍 시 시각적 피드백 */
         .char-row.drag-over {
             border-top: 3px dashed var(--primary);
             opacity: 0.8;
@@ -382,23 +407,29 @@
         .char-info-col {
             display: flex;
             align-items: center;
-            gap: 15px; 
-            min-width: 220px; 
-            flex-shrink: 0;
+            gap: 8px; 
+            text-align: left;
+            flex-wrap: wrap; /* 공간 부족 시 텍스트 래핑 */
+        }
+        .col-center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
         }
 
         .job-icon-group {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 6px;
-            width: 55px; 
+            gap: 4px;
+            width: 45px; 
         }
 
         .job-img-container {
             position: relative;
-            width: 45px;
-            height: 45px;
+            width: 40px;
+            height: 40px;
             border-radius: 10px;
             overflow: hidden;
             flex-shrink: 0;
@@ -418,7 +449,7 @@
         }
         
         .char-job-label {
-            font-size: 0.75rem;
+            font-size: 0.65rem;
             color: #868e96;
             font-weight: 600;
             white-space: nowrap;
@@ -428,12 +459,11 @@
             display: flex; 
             flex-direction: column; 
             justify-content: center;
-            gap: 6px; 
+            gap: 4px; 
         }
 
-        /* 닉네임 하이퍼링크 스타일 설정 */
         .char-name { 
-            font-size: 1.05rem; 
+            font-size: 1rem; 
             font-weight: 700; 
             text-decoration: none;
             color: inherit;
@@ -444,20 +474,16 @@
             text-decoration: underline;
         }
         
-        /* --- 수동 전투력 입력 스타일 --- */
-        .cp-input-group {
-            display: flex;
-            align-items: center;
-        }
+        .cp-input-group { display: flex; align-items: center; }
         
         .cp-manual-input {
-            width: 50px; /* 350.5 등 4자리 소수점에 맞게 크기 축소 */
+            width: 45px; 
             padding: 2px 4px;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 700;
             color: var(--warning);
             background: var(--item-bg);
-            border: 2px solid #fab005; 
+            border: 1px solid #fab005; 
             border-radius: 6px; 
             text-align: right;
             outline: none;
@@ -468,92 +494,96 @@
             background: var(--input-bg);
         }
         .cp-manual-input::-webkit-outer-spin-button,
-        .cp-manual-input::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-        .cp-manual-input[type=number] {
-            -moz-appearance: textfield;
-        }
-        .cp-unit {
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: var(--warning);
-            margin-left: 3px;
-            transition: color 0.2s;
-        }
+        .cp-manual-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .cp-manual-input[type=number] { -moz-appearance: textfield; }
+        .cp-unit { font-size: 0.8rem; font-weight: 700; color: var(--warning); margin-left: 2px; }
 
-        /* 편집 모드가 아닐 때 전투력 읽기 전용 스타일 (노란 테두리/글씨 유지, 배경만 투명화) */
         .cp-manual-input.readonly-mode {
             background: transparent !important;
+            border-color: transparent !important;
             pointer-events: none; 
         }
 
-        /* --- 변경된 오드 표시 UI --- */
-        .char-aether-col {
+        /* 캐릭터 개별 횟수 (원정/초월) 텍스트 */
+        .count-text {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-color);
+        }
+
+        /* 성역 체크박스 컨테이너 */
+        .col-sanc {
             display: flex;
-            gap: 15px;
-            min-width: 200px;
-            flex-shrink: 0;
+            gap: 3px;
+            justify-content: center;
+            width: 100%;
+            flex-wrap: wrap; /* 창 좁아질 시 줄바꿈 */
+        }
+        .sanc-check-btn {
+            flex: 1 1;
+            min-width: 30px;
+            background-color: var(--btn-bg);
+            color: var(--sub-text);
+            border: 1px solid var(--border-color);
+            padding: 4px 2px;
+            border-radius: 6px;
             cursor: pointer;
-            padding: 5px 10px;
-            border-radius: 8px;
-            transition: background 0.2s;
+            font-size: 0.7rem;
+            font-weight: 700;
+            transition: all 0.2s;
+            text-align: center;
         }
-        .char-aether-col:hover {
-            background: var(--click-bg);
+        .sanc-check-btn.active {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            color: white;
         }
-        .aether-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            align-items: center;
-            flex: 1;
-        }
-        .aether-group label {
-            font-size: 0.75rem;
-            color: #868e96;
-            font-weight: 600;
-        }
+
+        /* 오드 표시 박스 */
         .stat-display-box {
             background: var(--input-bg);
             border: 1px solid var(--border-color);
-            padding: 6px 0;
-            width: 80px;
+            padding: 4px 0;
+            width: 100%;
             border-radius: 6px;
             font-weight: 700;
             text-align: center;
-            font-size: 1rem;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: border-color 0.2s;
         }
-        .char-aether-col:hover .stat-display-box {
+        .stat-display-box:hover {
             border-color: var(--primary);
         }
         .max-text {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: var(--sub-text);
             font-weight: normal;
         }
 
+        /* 오드 사용 반영 (가변 버튼 설정) */
         .char-buttons-col {
             display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-            flex-grow: 1;
+            justify-content: center;
+            gap: 4px;
+            width: 100%;
+            flex-wrap: wrap; /* 버튼 넘치면 자동으로 아래로 배치 */
         }
 
         .action-btn {
-            flex: 1;
-            padding: 8px 12px;
+            padding: 6px 8px; 
             cursor: pointer;
             background: var(--btn-bg);
             color: var(--text-color);
             border: 1px solid var(--border-color);
             border-radius: 6px;
-            font-size: 0.85rem;
+            font-size: 0.75rem;
+            letter-spacing: -0.3px;
             font-weight: 600;
             transition: all 0.15s;
             user-select: none;
-            white-space: nowrap;
+            text-align: center;
+            flex: 1 1 45%; /* 좁을 땐 2개씩 2줄로 배치 유도 */
         }
         .action-btn:hover:not(:disabled) {
             background: var(--btn-hover);
@@ -565,36 +595,13 @@
             opacity: 0.5;
             cursor: not-allowed;
         }
-        .action-btn.sanctuary-btn {
-            border-color: rgba(174, 62, 201, 0.4);
-        }
-        .action-btn.sanctuary-btn:hover:not(:disabled) {
-            background: var(--purple);
-            color: white;
-            border-color: var(--purple);
-        }
 
-        .char-checks-col {
-            display: flex;
-            gap: 20px;
-            align-items: center;
-            flex-shrink: 0;
-        }
-        .switch-container {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .switch-title {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--sub-text);
-        }
+        /* 토글 스위치 (회랑) */
         .switch {
             position: relative;
             display: inline-block;
-            width: 38px;
-            height: 20px;
+            width: 36px;
+            height: 18px;
         }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider {
@@ -609,9 +616,9 @@
         .slider:before {
             position: absolute;
             content: "";
-            height: 14px;
-            width: 14px;
-            left: 2px;
+            height: 12px;
+            width: 12px;
+            left: 3px;
             bottom: 2px;
             background-color: white;
             transition: .2s;
@@ -620,28 +627,24 @@
         input:checked + .slider { background-color: #2b8a3e; border-color: #2b8a3e; }
         input:checked + .slider:before { transform: translateX(18px); }
 
+        /* 악몽 */
         .char-nightmare-col {
             display: flex;
+            flex-direction: column;
+            gap: 4px;
             align-items: center;
-            gap: 10px;
-            min-width: 100px;
-            flex-shrink: 0;
-            justify-content: center;
+            width: 90%;
         }
-
         .char-nightmare-col .clickable-num {
-            width: 48px;        
-            padding: 4px 0;     
+            width: 100%;        
+            padding: 2px 0;     
             box-sizing: border-box;
-            display: inline-block;
-        }
-        .nightmare-title {
-            font-size: 0.85rem;
-            color: var(--sub-text);
-            font-weight: 600;
+            display: block;
+            text-align: center;
+            font-size: 1.1rem;
         }
 
-        .delete-col { flex-shrink: 0; min-width: 30px; display: flex; justify-content: center; }
+        .delete-col { display: flex; justify-content: center; width: 100%; }
         .delete-btn {
             background: none;
             border: none;
@@ -656,7 +659,7 @@
         /* 드래그 핸들 UI */
         .drag-handle {
             cursor: grab;
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             color: var(--sub-text);
             padding: 5px;
             user-select: none;
@@ -830,11 +833,6 @@
         .btn-save:hover { background: #1c7ed6; }
 
         /* --- 악몽 횟수 프로그레스 바 관련 스타일 --- */
-        .nightmare-box-wrapper {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
         .nm-progress-container {
             width: 100%;
             background-color: var(--click-bg);
@@ -868,7 +866,6 @@
     </div>
 
     <div class="global-dashboard-wrapper">
-        
         <div class="dashboard-top-row">
             <div class="dashboard-card">
                 <div class="card-header">
@@ -957,7 +954,7 @@
                     <div style="display: flex; align-items: center; gap: 4px;">
                         <span id="shugo-count" class="clickable-num" title="기본 티켓 (좌클릭- / 우클릭+)" oncontextmenu="handleGlobalClick('shugo', true, event)" onclick="handleGlobalClick('shugo', false, event)">14</span>
                         <span style="font-weight: 800; color: var(--sub-text);">+</span>
-                        <span id="shugo-extra-count" class="clickable-num" style="color: var(--aether-add);" title="추가 티켓 (좌클릭+ / 우클릭-)" oncontextmenu="handleGlobalExtraClick('shugo', false, event)" onclick="handleGlobalExtraClick('shugo', true, event)">0</span>
+                        <span id="shugo-extra-count" class="clickable-num" style="color: var(--aether-add);" title="추가 티켓 (좌클릭- / 우클릭+)" oncontextmenu="handleGlobalExtraClick('shugo', false, event)" onclick="handleGlobalExtraClick('shugo', true, event)">0</span>
                     </div>
                     <button class="pretty-check-btn complete-only-btn" onclick="deductGlobalOne('shugo')">✓</button>
                 </div>
@@ -977,7 +974,7 @@
                     <div style="display: flex; align-items: center; gap: 4px;">
                         <span id="invasion-count" class="clickable-num" title="기본 티켓 (좌클릭- / 우클릭+)" oncontextmenu="handleGlobalClick('invasion', true, event)" onclick="handleGlobalClick('invasion', false, event)">7</span>
                         <span style="font-weight: 800; color: var(--sub-text);">+</span>
-                        <span id="invasion-extra-count" class="clickable-num" style="color: var(--aether-add);" title="추가 티켓 (좌클릭+ / 우클릭-)" oncontextmenu="handleGlobalExtraClick('invasion', false, event)" onclick="handleGlobalExtraClick('invasion', true, event)">0</span>
+                        <span id="invasion-extra-count" class="clickable-num" style="color: var(--aether-add);" title="추가 티켓 (좌클릭- / 우클릭+)" oncontextmenu="handleGlobalExtraClick('invasion', false, event)" onclick="handleGlobalExtraClick('invasion', true, event)">0</span>
                     </div>
                     <button class="pretty-check-btn complete-only-btn" onclick="deductGlobalOne('invasion')">✓</button>
                 </div>
@@ -990,7 +987,24 @@
         </div>
     </div>
 
-    <div class="char-list-container" id="char-list">
+    <div class="char-list-wrapper">
+        <div class="char-list-inner">
+            <div class="char-list-header grid-layout">
+                <div style="text-align: left; padding-left: 10px;">닉네임 & 투력</div>
+                <div>원정</div>
+                <div>초월</div>
+                <div>성역</div>
+                <div>기본 오드</div>
+                <div>추가 오드</div>
+                <div>오드 사용 반영</div>
+                <div>회랑</div>
+                <div>각성</div>
+                <div>악몽</div>
+                <div>관리</div>
+            </div>
+            <div id="char-list" style="display: flex; flex-direction: column; gap: 8px;">
+            </div>
+        </div>
     </div>
 
     <div class="add-char-section">
@@ -1086,16 +1100,28 @@
 
     let appData = JSON.parse(localStorage.getItem('aion2_refined_data')) || defaultData;
     
-    // 기존 유저 데이터 호환성 보장
+    // 기존 유저 데이터 호환성 보장 및 새로운 속성 추가
     if(appData.shugoExtra === undefined) appData.shugoExtra = 0;
     if(appData.invasionExtra === undefined) appData.invasionExtra = 0;
     appData.characters.forEach(char => {
         if(char.combatPower === undefined || char.combatPower === '-') char.combatPower = '';
+        if(char.charExp === undefined) char.charExp = 0;
+        if(char.charTrans === undefined) char.charTrans = 0;
+        if(char.rudra === undefined) char.rudra = false;
+        if(char.erosion === undefined) char.erosion = false;
+        if(char.muspel === undefined) char.muspel = false;
+        
+        // 각성 횟수제로 마이그레이션
+        if (typeof char.awakening === 'boolean' || char.awakeningBasic === undefined) {
+            char.awakeningBasic = 3;
+            char.awakeningExtra = 0;
+            delete char.awakening;
+        }
     });
 
     let currentModalCharIndex = -1;
-    let isEditMode = false;       // 신규 추가: 편집 모드 상태
-    let dragStartIndex = -1;      // 신규 추가: 드래그 앤 드랍 인덱스 기록용
+    let isEditMode = false;       
+    let dragStartIndex = -1;      
 
     function init() {
         checkAutoResets();
@@ -1152,7 +1178,6 @@
     function updateCombatPower(index, value) {
         let num = parseFloat(value);
         if (!isNaN(num)) {
-            // 입력된 숫자를 무조건 소수점 첫 번째 자리까지로 변환해서 저장
             appData.characters[index].combatPower = num.toFixed(1); 
         } else {
             appData.characters[index].combatPower = '';
@@ -1178,7 +1203,6 @@
         
         let currentTotalSeconds = hr * 3600 + min * 60 + sec;
         
-        // 기본 오드 충전 시간 (2, 5, 8, 11, 14, 17, 20, 23 시) 다음날 2시(26) 포함
         let targets = [2, 5, 8, 11, 14, 17, 20, 23, 26]; 
         
         let targetSeconds = 0;
@@ -1277,39 +1301,28 @@
             const dExp120 = totalAether < 120 ? 'disabled' : '';
             const dTrans80 = totalAether < 80 ? 'disabled' : '';
             const dTrans120 = totalAether < 120 ? 'disabled' : '';
-            const dSanc160 = totalAether < 160 ? 'disabled' : '';
 
             const imgSrc = char.job === '권성' ? '권성.webp' : `${char.job}.webp`;
             const overlayColor = jobColors[char.job];
             
-            // 기존 데이터 호환을 위해 K 문자열을 치환
             let rawCpValue = char.combatPower ? char.combatPower.toString().replace('K', '') : '';
             
-            // 편집 모드 여부에 따른 상태 변경 및 우측 끝 요소 처리
             const cpClass = isEditMode ? 'cp-manual-input' : 'cp-manual-input readonly-mode';
             const cpReadonly = isEditMode ? '' : 'readonly';
             const rightEndElement = isEditMode 
                 ? `<button class="delete-btn" onclick="deleteCharacter(${index})" title="캐릭터 정보 제거">✖</button>`
                 : `<div class="drag-handle" title="드래그 앤 드랍으로 순서 변경">☰</div>`;
 
-            // 악몽 횟수에 따른 색상 및 퍼센트 계산
             let nm = char.nightmare;
             let nmColor = 'var(--text-color)'; 
-            if (nm >= 6 && nm <= 9) {
-                nmColor = 'var(--warning)'; // 노란색
-            } else if (nm >= 10 && nm <= 13) {
-                nmColor = '#fd7e14'; // 주황색
-            } else if (nm === 14) {
-                nmColor = 'var(--danger)'; // 빨간색
-            }
-            
-            // 14회 기준 잔여 퍼센트
+            if (nm >= 6 && nm <= 9) nmColor = 'var(--warning)';
+            else if (nm >= 10 && nm <= 13) nmColor = '#fd7e14';
+            else if (nm === 14) nmColor = 'var(--danger)';
             let nmPct = (nm / 14) * 100;
 
             const row = document.createElement('div');
-            row.className = 'char-row';
+            row.className = 'char-row grid-layout';
             
-            // 편집모드가 아닐 때만 드래그 앤 드랍 활성화
             if(!isEditMode) {
                 row.draggable = true;
                 row.ondragstart = (e) => handleDragStart(e, index);
@@ -1319,7 +1332,6 @@
                 row.ondrop = (e) => handleDrop(e, index);
             }
 
-            // --- 아이콘 및 정보 표시부 (a태그 하이퍼링크 적용됨) ---
             row.innerHTML = `
                 <div class="char-info-col">
                     <div class="job-icon-group">
@@ -1329,7 +1341,6 @@
                         </div>
                         <span class="char-job-label">${char.job}</span>
                     </div>
-                    
                     <div class="char-name-box">
                         <a href="https://aion2tool.com/char/serverid=1006/${char.name}" target="_blank" class="char-name" title="캐릭터 정보 보기">${char.name}</a>
                         <div class="cp-input-group">
@@ -1338,16 +1349,27 @@
                         </div>
                     </div>
                 </div>
-                
-                <div class="char-aether-col" onclick="openAetherModal(${index})" title="오드 에너지를 눌러 조절하기">
-                    <div class="aether-group">
-                        <label>기본 오드</label>
-                        <div class="stat-display-box">${char.basicAether} <span class="max-text">/ 840</span></div>
-                    </div>
-                    <div class="aether-group">
-                        <label style="color: var(--aether-add);">추가 오드</label>
-                        <div class="stat-display-box" style="color: var(--aether-add); border-color: rgba(51, 154, 240, 0.4);">${char.addAether} <span class="max-text">/ 2000</span></div>
-                    </div>
+
+                <div class="col-center">
+                    <span class="count-text">${char.charExp}</span>
+                </div>
+
+                <div class="col-center">
+                    <span class="count-text">${char.charTrans}</span>
+                </div>
+
+                <div class="col-sanc">
+                    <button class="sanc-check-btn ${char.rudra ? 'active' : ''}" onclick="toggleSanc(${index}, 'rudra')">루드라</button>
+                    <button class="sanc-check-btn ${char.erosion ? 'active' : ''}" onclick="toggleSanc(${index}, 'erosion')">침식</button>
+                    <button class="sanc-check-btn ${char.muspel ? 'active' : ''}" onclick="toggleSanc(${index}, 'muspel')">무스펠</button>
+                </div>
+
+                <div class="col-center" onclick="openAetherModal(${index})">
+                    <div class="stat-display-box">${char.basicAether} <br><span class="max-text">/ 840</span></div>
+                </div>
+
+                <div class="col-center" onclick="openAetherModal(${index})">
+                    <div class="stat-display-box" style="color: var(--aether-add); border-color: rgba(51, 154, 240, 0.4);">${char.addAether} <br><span class="max-text">/ 2000</span></div>
                 </div>
 
                 <div class="char-buttons-col">
@@ -1355,33 +1377,27 @@
                     <button class="action-btn" ${dExp120} oncontextmenu="spendAether(${index}, 120, 'exp', true, event)" onclick="spendAether(${index}, 120, 'exp', false, event)">원정(120)</button>
                     <button class="action-btn" ${dTrans80} oncontextmenu="spendAether(${index}, 80, 'trans', true, event)" onclick="spendAether(${index}, 80, 'trans', false, event)">초월(80)</button>
                     <button class="action-btn" ${dTrans120} oncontextmenu="spendAether(${index}, 120, 'trans', true, event)" onclick="spendAether(${index}, 120, 'trans', false, event)">초월(120)</button>
-                    <button class="action-btn sanctuary-btn" ${dSanc160} oncontextmenu="spendAether(${index}, 160, 'sanc', true, event)" onclick="spendAether(${index}, 160, 'sanc', false, event)">성역</button>
                 </div>
 
-                <div class="char-checks-col">
-                    <div class="switch-container">
-                        <span class="switch-title">회랑</span>
-                        <label class="switch">
-                            <input type="checkbox" ${char.corridor ? 'checked' : ''} onchange="toggleCheck(${index}, 'corridor')">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                    <div class="switch-container">
-                        <span class="switch-title">각성</span>
-                        <label class="switch">
-                            <input type="checkbox" ${char.awakening ? 'checked' : ''} onchange="toggleCheck(${index}, 'awakening')">
-                            <span class="slider"></span>
-                        </label>
+                <div class="col-center">
+                    <label class="switch">
+                        <input type="checkbox" ${char.corridor ? 'checked' : ''} onchange="toggleCheck(${index}, 'corridor')">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="col-center">
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <span class="clickable-num" style="padding: 4px 6px; font-size: 1rem; border-radius: 8px;" title="기본 각성 (좌클릭- / 우클릭+)" oncontextmenu="handleAwakening(${index}, 'basic', true, event)" onclick="handleAwakening(${index}, 'basic', false, event)">${char.awakeningBasic}</span>
+                        <span style="font-weight: 800; color: var(--sub-text); font-size: 0.9rem;">+</span>
+                        <span class="clickable-num" style="color: var(--aether-add); padding: 4px 6px; font-size: 1rem; border-radius: 8px;" title="추가 각성 (좌클릭- / 우클릭+)" oncontextmenu="handleAwakening(${index}, 'extra', true, event)" onclick="handleAwakening(${index}, 'extra', false, event)">${char.awakeningExtra}</span>
                     </div>
                 </div>
 
                 <div class="char-nightmare-col">
-                    <span class="nightmare-title">악몽:</span>
-                    <div class="nightmare-box-wrapper">
-                        <span class="clickable-num" style="color: ${nmColor};" oncontextmenu="handleNightmare(${index}, true, event)" onclick="handleNightmare(${index}, false, event)">${char.nightmare}</span>
-                        <div class="nm-progress-container">
-                            <div class="nm-progress-bar" style="width: ${nmPct}%; background-color: ${nmColor};"></div>
-                        </div>
+                    <span class="clickable-num" style="color: ${nmColor};" oncontextmenu="handleNightmare(${index}, true, event)" onclick="handleNightmare(${index}, false, event)">${char.nightmare}</span>
+                    <div class="nm-progress-container">
+                        <div class="nm-progress-bar" style="width: ${nmPct}%; background-color: ${nmColor};"></div>
                     </div>
                 </div>
 
@@ -1443,9 +1459,15 @@
             basicAether: 840,
             addAether: 0,
             corridor: false,
-            awakening: false,
+            awakeningBasic: 3,
+            awakeningExtra: 0,
             nightmare: 14,
-            combatPower: '' 
+            combatPower: '',
+            charExp: 0,
+            charTrans: 0,
+            rudra: false,
+            erosion: false,
+            muspel: false
         });
 
         nameIn.value = '';
@@ -1464,6 +1486,53 @@
     function toggleCheck(charIndex, field) {
         appData.characters[charIndex][field] = !appData.characters[charIndex][field];
         saveData();
+    }
+
+    function toggleSanc(charIndex, type) {
+        let char = appData.characters[charIndex];
+        let cost = 160;
+        
+        if (!char[type]) {
+            if (char.basicAether + char.addAether < cost) {
+                return;
+            }
+            if (char.basicAether >= cost) {
+                char.basicAether -= cost;
+            } else {
+                let diff = cost - char.basicAether;
+                char.basicAether = 0;
+                char.addAether -= diff;
+            }
+            char[type] = true;
+        } else {
+            let emptyBasic = 840 - char.basicAether;
+            if (cost <= emptyBasic) {
+                char.basicAether += cost;
+            } else {
+                char.basicAether = 840;
+                char.addAether = Math.min(2000, char.addAether + (cost - emptyBasic));
+            }
+            char[type] = false;
+        }
+
+        saveData();
+        render();
+    }
+
+    function handleAwakening(charIndex, type, isRight, event) {
+        event.preventDefault();
+        let char = appData.characters[charIndex];
+        
+        if (type === 'basic') {
+            if (isRight) char.awakeningBasic = Math.min(3, char.awakeningBasic + 1);
+            else char.awakeningBasic = Math.max(0, char.awakeningBasic - 1);
+        } else if (type === 'extra') {
+            if (isRight) char.awakeningExtra = Math.min(10, char.awakeningExtra + 1);
+            else char.awakeningExtra = Math.max(0, char.awakeningExtra - 1);
+        }
+        
+        saveData();
+        render();
     }
 
     function handleNightmare(charIndex, isRight, event) {
@@ -1547,8 +1616,14 @@
                 char.addAether -= diff;
             }
 
-            if (type === 'exp') appData.totalExp++;
-            if (type === 'trans') appData.totalTrans++;
+            if (type === 'exp') {
+                appData.totalExp++;
+                char.charExp++;
+            }
+            if (type === 'trans') {
+                appData.totalTrans++;
+                char.charTrans++;
+            }
 
         } else { 
             let emptyBasic = 840 - char.basicAether;
@@ -1559,8 +1634,14 @@
                 char.addAether = Math.min(2000, char.addAether + (cost - emptyBasic));
             }
 
-            if (type === 'exp' && appData.totalExp > 0) appData.totalExp--;
-            if (type === 'trans' && appData.totalTrans > 0) appData.totalTrans--;
+            if (type === 'exp') {
+                if(appData.totalExp > 0) appData.totalExp--;
+                if(char.charExp > 0) char.charExp--;
+            }
+            if (type === 'trans') {
+                if(appData.totalTrans > 0) appData.totalTrans--;
+                if(char.charTrans > 0) char.charTrans--;
+            }
         }
 
         saveData();
@@ -1579,23 +1660,19 @@
 
         const KST_OFFSET = 9 * 3600 * 1000;
         
-        // 마지막 체크 시간 이후의 다음 정각 시간을 계산
         let nextHour = Math.floor(last / 3600000) * 3600000 + 3600000;
         
-        // 장기 미접속 시 브라우저 렉(무한 루프)을 방지하기 위해 최대 2주치까지만 소급 시뮬레이션
         if (now - nextHour > 14 * 24 * 3600 * 1000) { 
             nextHour = Math.floor((now - 14 * 24 * 3600 * 1000) / 3600000) * 3600000 + 3600000;
         }
         
         let changed = false;
 
-        // 밀린 시간만큼 1시간씩 진행하며 트리거 이벤트 확인 (매우 안전하고 정확한 방식)
         while (nextHour <= now) {
             let dateKST = new Date(nextHour + KST_OFFSET);
-            let d = dateKST.getUTCDay(); // 0:일, 1:월, 2:화, 3:수, 4:목, 5:금, 6:토
+            let d = dateKST.getUTCDay(); 
             let hr = dateKST.getUTCHours();
 
-            // [요청 3번] 기본 오드 충전: 매일 02, 05, 08, 11, 14, 17, 20, 23시 (+15)
             if ([2, 5, 8, 11, 14, 17, 20, 23].includes(hr)) {
                 appData.characters.forEach(char => {
                     char.basicAether = Math.min(840, char.basicAether + 15);
@@ -1603,29 +1680,29 @@
                 changed = true;
             }
 
-            // 매일 오전 5시 리셋 및 충전
             if (hr === 5) {
-                // [요청 5번] 슈고(+2), 침공(+1) 매일 5시 충전
                 appData.shugo = Math.min(14, appData.shugo + 2);
                 appData.invasion = Math.min(7, appData.invasion + 1);
                 
                 appData.characters.forEach(char => {
-                    // [요청 8번] 악몽(+2) 매일 5시 충전
                     char.nightmare = Math.min(14, char.nightmare + 2);
                 });
                 
-                // [요청 4, 7번] 목요일 오전 5시 원정, 초월, 각성 초기화
-                if (d === 4) { // 4: 목요일
+                if (d === 3) {
                     appData.totalExp = 0;
                     appData.totalTrans = 0;
                     appData.characters.forEach(char => {
-                        char.awakening = false;
+                        char.charExp = 0;
+                        char.charTrans = 0;
+                        char.rudra = false;
+                        char.erosion = false;
+                        char.muspel = false;
+                        char.awakeningBasic = 3;
                     });
                 }
                 changed = true;
             }
 
-            // [요청 6번] 회랑 초기화: 수요일(3), 토요일(6) 오후 10시(22시)
             if (hr === 22 && (d === 3 || d === 6)) {
                 appData.characters.forEach(char => {
                     char.corridor = false;
@@ -1649,7 +1726,6 @@
         location.reload();
     }
 
-    // --- 백업 생성 및 불러오기 함수 ---
     function exportBackup() {
         const data = localStorage.getItem('aion2_refined_data');
         if (!data) {
@@ -1657,7 +1733,6 @@
             return;
         }
 
-        // YYYY.MM.DD.HH.mm.ss 포맷으로 날짜 문자열 생성
         const now = new Date();
         const yyyy = now.getFullYear();
         const MM = String(now.getMonth() + 1).padStart(2, '0');
@@ -1668,7 +1743,6 @@
         
         const filename = `${yyyy}-${MM}-${dd}-${HH}-${mm}-${ss}_aion2_manage_backup.txt`;
         
-        // 텍스트 파일로 다운로드 (다른 이름으로 저장하기 창 트리거 ) 
         const blob = new Blob([data], { type: 'text/plain' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -1677,7 +1751,6 @@
         document.body.appendChild(a);
         a.click();
         
-        // 다운로드 후 객체 해제
         setTimeout(() => {
             document.body.removeChild(a);
             window.URL.revokeObjectURL(url);
@@ -1688,18 +1761,16 @@
         const file = event.target.files[0];
         if (!file) return;
 
-        // 경고 모달 (브라우저 기본 confirm 사용)
         if (confirm("경고: 기존 데이터가 모두 삭제되고 불러온 파일의 데이터로 덮어씌워집니다.\n계속하시겠습니까?")) {
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
                     const importedData = JSON.parse(e.target.result);
                     
-                    // 간단한 유효성 검사 (데이터 구조 확인)
                     if (importedData && typeof importedData === 'object' && Array.isArray(importedData.characters)) {
                         localStorage.setItem('aion2_refined_data', JSON.stringify(importedData));
                         alert("백업 데이터를 성공적으로 불러왔습니다.");
-                        location.reload(); // 즉시 덮어씌워진 데이터로 새로고침
+                        location.reload(); 
                     } else {
                         alert("유효하지 않은 백업 파일 포맷입니다.");
                     }
@@ -1710,7 +1781,6 @@
             reader.readAsText(file);
         }
         
-        // 동일한 파일을 다시 선택할 수 있도록 input 값을 초기화
         event.target.value = '';
     }
 
