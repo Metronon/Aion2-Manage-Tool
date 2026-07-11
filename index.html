@@ -1171,11 +1171,25 @@
         const now = Date.now();
         const KST_OFFSET = 9 * 3600 * 1000;
         
-        let currentBlock = Math.floor((now + KST_OFFSET + 3600 * 1000) / (3 * 3600 * 1000));
-        let nextBlockTime = (currentBlock + 1) * (3 * 3600 * 1000) - KST_OFFSET - 3600 * 1000;
-        let diffMs = nextBlockTime - now;
+        let dateKST = new Date(now + KST_OFFSET);
+        let hr = dateKST.getUTCHours();
+        let min = dateKST.getUTCMinutes();
+        let sec = dateKST.getUTCSeconds();
         
-        let diffS = Math.floor(diffMs / 1000);
+        let currentTotalSeconds = hr * 3600 + min * 60 + sec;
+        
+        // 기본 오드 충전 시간 (2, 5, 8, 11, 14, 17, 20, 23 시) 다음날 2시(26) 포함
+        let targets = [2, 5, 8, 11, 14, 17, 20, 23, 26]; 
+        
+        let targetSeconds = 0;
+        for (let t of targets) {
+            if (t * 3600 > currentTotalSeconds) {
+                targetSeconds = t * 3600;
+                break;
+            }
+        }
+        
+        let diffS = targetSeconds - currentTotalSeconds;
         let h = Math.floor(diffS / 3600);
         let m = Math.floor((diffS % 3600) / 60);
         let s = diffS % 60;
@@ -1185,11 +1199,8 @@
             timerElem.innerText = `기본 오드 자연 충전까지 남은 시간: ${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
         }
         
-        let last = appData.lastCheckTime;
-        let last3HBlock = Math.floor((last + KST_OFFSET + 3600 * 1000) / (3 * 3600 * 1000));
-        
-        if (currentBlock > last3HBlock) {
-            manualTimePass(); 
+        if(checkAutoResets()) {
+            render();
         }
     }
 
@@ -1563,65 +1574,78 @@
         if (now <= last) {
             appData.lastCheckTime = now;
             saveData();
-            return;
+            return false;
         }
 
-        const KST_OFFSET = 9 * 60 * 60 * 1000;
+        const KST_OFFSET = 9 * 3600 * 1000;
         
-        let lastKST = new Date(last + KST_OFFSET);
-        let nowKST = new Date(now + KST_OFFSET);
+        // 마지막 체크 시간 이후의 다음 정각 시간을 계산
+        let nextHour = Math.floor(last / 3600000) * 3600000 + 3600000;
         
-        let last3HBlock = Math.floor((last + KST_OFFSET + 3600 * 1000) / (3 * 3600 * 1000));
-        let now3HBlock = Math.floor((now + KST_OFFSET + 3600 * 1000) / (3 * 3600 * 1000));
-        let odedTicks = now3HBlock - last3HBlock;
-        
-        if (odedTicks > 0) {
-            appData.characters.forEach(char => {
-                char.basicAether = Math.min(840, char.basicAether + (15 * odedTicks));
-            });
+        // 장기 미접속 시 브라우저 렉(무한 루프)을 방지하기 위해 최대 2주치까지만 소급 시뮬레이션
+        if (now - nextHour > 14 * 24 * 3600 * 1000) { 
+            nextHour = Math.floor((now - 14 * 24 * 3600 * 1000) / 3600000) * 3600000 + 3600000;
         }
-
-        let last5AMBlock = Math.floor((last + KST_OFFSET - 5 * 3600 * 1000) / (24 * 3600 * 1000));
-        let now5AMBlock = Math.floor((now + KST_OFFSET - 5 * 3600 * 1000) / (24 * 3600 * 1000));
-        let dailyTicks = now5AMBlock - last5AMBlock;
         
-        if (dailyTicks > 0) {
-            appData.shugo = Math.min(14, appData.shugo + (2 * dailyTicks));
-            appData.invasion = Math.min(7, appData.invasion + (1 * dailyTicks));
-            appData.characters.forEach(char => {
-                char.nightmare = Math.min(14, char.nightmare + (2 * dailyTicks));
-            });
-        }
+        let changed = false;
 
-        let hoursGap = Math.floor((nowKST.getTime() - lastKST.getTime()) / (3600 * 1000));
-        if (hoursGap > 0) {
-            if (hoursGap > 24 * 14) { 
+        // 밀린 시간만큼 1시간씩 진행하며 트리거 이벤트 확인 (매우 안전하고 정확한 방식)
+        while (nextHour <= now) {
+            let dateKST = new Date(nextHour + KST_OFFSET);
+            let d = dateKST.getUTCDay(); // 0:일, 1:월, 2:화, 3:수, 4:목, 5:금, 6:토
+            let hr = dateKST.getUTCHours();
+
+            // [요청 3번] 기본 오드 충전: 매일 02, 05, 08, 11, 14, 17, 20, 23시 (+15)
+            if ([2, 5, 8, 11, 14, 17, 20, 23].includes(hr)) {
                 appData.characters.forEach(char => {
-                    char.awakening = false;
+                    char.basicAether = Math.min(840, char.basicAether + 15);
+                });
+                changed = true;
+            }
+
+            // 매일 오전 5시 리셋 및 충전
+            if (hr === 5) {
+                // [요청 5번] 슈고(+2), 침공(+1) 매일 5시 충전
+                appData.shugo = Math.min(14, appData.shugo + 2);
+                appData.invasion = Math.min(7, appData.invasion + 1);
+                
+                appData.characters.forEach(char => {
+                    // [요청 8번] 악몽(+2) 매일 5시 충전
+                    char.nightmare = Math.min(14, char.nightmare + 2);
+                });
+                
+                // [요청 4, 7번] 목요일 오전 5시 원정, 초월, 각성 초기화
+                if (d === 4) { // 4: 목요일
+                    appData.totalExp = 0;
+                    appData.totalTrans = 0;
+                    appData.characters.forEach(char => {
+                        char.awakening = false;
+                    });
+                }
+                changed = true;
+            }
+
+            // [요청 6번] 회랑 초기화: 수요일(3), 토요일(6) 오후 10시(22시)
+            if (hr === 22 && (d === 3 || d === 6)) {
+                appData.characters.forEach(char => {
                     char.corridor = false;
                 });
-            } else {
-                for (let h = 1; h <= hoursGap; h++) {
-                    let timeline = new Date(lastKST.getTime() + h * 3600 * 1000);
-                    let d = timeline.getUTCDay();
-                    let hr = timeline.getUTCHours();
-                    
-                    if (d === 3 && hr === 10) {
-                        appData.characters.forEach(char => char.awakening = false);
-                    }
-                    if ((d === 3 && hr === 22) || (d === 6 && hr === 22)) {
-                        appData.characters.forEach(char => char.corridor = false);
-                    }
-                }
+                changed = true;
             }
+
+            nextHour += 3600000;
         }
 
         appData.lastCheckTime = now;
         saveData();
+        
+        return changed;
     }
 
     function manualTimePass() {
-        checkAutoResets();
+        if(checkAutoResets()) {
+            render();
+        }
         location.reload();
     }
 
