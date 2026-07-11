@@ -355,23 +355,19 @@
             padding-bottom: 15px;
         }
         .char-list-inner {
-            /* 피벗 모니터 꽉 차게 적응형으로 변경. 스크롤바 방지 */
             width: 100%; 
             display: flex;
             flex-direction: column;
             gap: 10px;
         }
 
-        /* 공통 그리드 템플릿 (헤더 & 개별 캐릭터 행 완전 일치) */
-        /* 비율(fr) 기반 할당으로 해상도에 맞게 자동 리사이징 */
         .grid-layout {
             display: grid;
             grid-template-columns: 1.6fr 0.6fr 0.6fr 1.3fr 0.8fr 0.8fr 2.5fr 0.5fr 1.1fr 0.7fr 0.5fr;
             align-items: center;
-            gap: 6px; /* 좁은 모니터를 위해 간격 최적화 */
+            gap: 6px; 
         }
 
-        /* 반응형: 모바일 등 극단적으로 좁은 환경에서는 스크롤 허용 */
         @media (max-width: 900px) {
             .char-list-inner { min-width: 900px; }
         }
@@ -382,10 +378,10 @@
             border: 1px solid var(--border-color);
             border-radius: 10px;
             font-weight: 700;
-            font-size: 0.8rem; /* 폰트 약간 조정 */
+            font-size: 0.8rem; 
             color: var(--sub-text);
             text-align: center;
-            word-break: keep-all; /* 줄바꿈 허용 */
+            word-break: keep-all; 
         }
 
         .char-row {
@@ -409,7 +405,7 @@
             align-items: center;
             gap: 8px; 
             text-align: left;
-            flex-wrap: wrap; /* 공간 부족 시 텍스트 래핑 */
+            flex-wrap: wrap; 
         }
         .col-center {
             display: flex;
@@ -498,26 +494,23 @@
         .cp-manual-input[type=number] { -moz-appearance: textfield; }
         .cp-unit { font-size: 0.8rem; font-weight: 700; color: var(--warning); margin-left: 2px; }
 
+        /* 편집 모드가 아닐 때 테두리와 배경은 유지하되 클릭(포커스)만 방지 */
         .cp-manual-input.readonly-mode {
-            background: transparent !important;
-            border-color: transparent !important;
             pointer-events: none; 
         }
 
-        /* 캐릭터 개별 횟수 (원정/초월) 텍스트 */
         .count-text {
             font-size: 1rem;
             font-weight: 700;
             color: var(--text-color);
         }
 
-        /* 성역 체크박스 컨테이너 */
         .col-sanc {
             display: flex;
             gap: 3px;
             justify-content: center;
             width: 100%;
-            flex-wrap: wrap; /* 창 좁아질 시 줄바꿈 */
+            flex-wrap: wrap; 
         }
         .sanc-check-btn {
             flex: 1 1;
@@ -539,7 +532,6 @@
             color: white;
         }
 
-        /* 오드 표시 박스 */
         .stat-display-box {
             background: var(--input-bg);
             border: 1px solid var(--border-color);
@@ -561,13 +553,12 @@
             font-weight: normal;
         }
 
-        /* 오드 사용 반영 (가변 버튼 설정) */
         .char-buttons-col {
             display: flex;
             justify-content: center;
             gap: 4px;
             width: 100%;
-            flex-wrap: wrap; /* 버튼 넘치면 자동으로 아래로 배치 */
+            flex-wrap: wrap; 
         }
 
         .action-btn {
@@ -583,7 +574,7 @@
             transition: all 0.15s;
             user-select: none;
             text-align: center;
-            flex: 1 1 45%; /* 좁을 땐 2개씩 2줄로 배치 유도 */
+            flex: 1 1 45%; 
         }
         .action-btn:hover:not(:disabled) {
             background: var(--btn-hover);
@@ -596,7 +587,6 @@
             cursor: not-allowed;
         }
 
-        /* 토글 스위치 (회랑) */
         .switch {
             position: relative;
             display: inline-block;
@@ -627,7 +617,6 @@
         input:checked + .slider { background-color: #2b8a3e; border-color: #2b8a3e; }
         input:checked + .slider:before { transform: translateX(18px); }
 
-        /* 악몽 */
         .char-nightmare-col {
             display: flex;
             flex-direction: column;
@@ -656,7 +645,6 @@
         }
         .delete-btn:hover { color: var(--danger); background: var(--click-bg); }
         
-        /* 드래그 핸들 UI */
         .drag-handle {
             cursor: grab;
             font-size: 1.3rem;
@@ -705,7 +693,6 @@
         }
         .add-submit-btn:hover { background: #237032; }
 
-        /* --- 신규 추가: 모달(팝업) 스타일 --- */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -832,7 +819,6 @@
         .btn-cancel:hover { background: var(--btn-hover); }
         .btn-save:hover { background: #1c7ed6; }
 
-        /* --- 악몽 횟수 프로그레스 바 관련 스타일 --- */
         .nm-progress-container {
             width: 100%;
             background-color: var(--click-bg);
@@ -1186,6 +1172,40 @@
         render();
     }
 
+    // 닉네임 클릭 시 투력 자동 크롤링 (CORS 우회를 위해 퍼블릭 프록시 사용)
+    async function fetchAndUpdateCombatPower(index, charName) {
+        try {
+            const targetUrl = encodeURIComponent(`https://aion2tool.com/char/serverid=1006/${charName}`);
+            // CORS 우회 프록시
+            const response = await fetch(`https://api.allorigins.win/get?url=${targetUrl}`);
+            if (!response.ok) throw new Error('네트워크 응답 오류');
+            
+            const data = await response.json();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(data.contents, 'text/html');
+            
+            const cpElement = doc.getElementById('combat-power-main-value');
+            if (cpElement) {
+                // "714,045" -> "714045"
+                let rawValue = cpElement.innerText.replace(/,/g, '').trim(); 
+                let numValue = parseInt(rawValue, 10);
+                
+                if (!isNaN(numValue)) {
+                    let kValue = (numValue / 1000).toFixed(1); // "714.0"
+                    
+                    // 기존 데이터와 다를 때만 렌더링 및 저장 수행
+                    if (appData.characters[index].combatPower !== kValue) {
+                        appData.characters[index].combatPower = kValue;
+                        saveData();
+                        render();
+                    }
+                }
+            }
+        } catch (error) {
+            console.error("전투력 자동 업데이트 실패:", error);
+        }
+    }
+
     // 1초 단위 타이머 및 자동 동기화 로직
     function startRechargeTimer() {
         updateTimer();
@@ -1342,7 +1362,7 @@
                         <span class="char-job-label">${char.job}</span>
                     </div>
                     <div class="char-name-box">
-                        <a href="https://aion2tool.com/char/serverid=1006/${char.name}" target="_blank" class="char-name" title="캐릭터 정보 보기">${char.name}</a>
+                        <a href="https://aion2tool.com/char/serverid=1006/${char.name}" target="_blank" class="char-name" title="캐릭터 정보 보기" onclick="fetchAndUpdateCombatPower(${index}, '${char.name}')">${char.name}</a>
                         <div class="cp-input-group">
                             <input type="number" step="0.1" class="${cpClass}" ${cpReadonly} value="${rawCpValue}" onblur="updateCombatPower(${index}, this.value)" placeholder="0.0">
                             <span class="cp-unit">K</span>
