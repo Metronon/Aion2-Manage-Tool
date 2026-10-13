@@ -831,6 +831,197 @@
             border-radius: 10px;
             transition: width 0.3s ease, background-color 0.3s ease;
         }
+
+        /* --- 컨텐츠 스케줄 타이머 위젯 --- */
+        .content-schedule-section {
+            width: 100%;
+            max-width: 580px;
+            margin-top: 5px;
+            margin-bottom: 20px;
+            margin-left: 0;
+            margin-right: auto;
+        }
+
+        .ct-group-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 0.88rem;
+        }
+
+        .ct-group-label {
+            font-weight: 700;
+            color: var(--sub-text);
+        }
+
+        .ct-group-btns {
+            display: inline-flex;
+            gap: 6px;
+        }
+
+        .ct-group-btn {
+            padding: 4px 12px;
+            background: var(--btn-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.82rem;
+            font-weight: 700;
+            transition: all 0.15s ease;
+        }
+
+        .ct-group-btn:hover {
+            background: var(--btn-hover);
+            border-color: var(--sub-text);
+        }
+
+        .ct-group-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #ffffff;
+            box-shadow: 0 0 8px rgba(34, 139, 230, 0.4);
+        }
+
+        .ct-group-hint {
+            font-size: 0.8rem;
+            color: var(--sub-text);
+            margin-left: 6px;
+        }
+
+        .content-schedule-card {
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        body.light-mode .content-schedule-card {
+            border-color: #adb5bd;
+        }
+
+        .ct-clock-header {
+            text-align: center;
+            padding: 12px 16px;
+            font-size: 1.45rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.02);
+            color: var(--text-color);
+        }
+
+        body.light-mode .ct-clock-header {
+            border-color: #dee2e6;
+            background: #f1f3f5;
+        }
+
+        .ct-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1.15fr;
+        }
+
+        .ct-col {
+            display: flex;
+            flex-direction: column;
+            border-right: 2px solid var(--border-color);
+        }
+
+        .ct-col:last-child {
+            border-right: none;
+        }
+
+        body.light-mode .ct-col {
+            border-color: #dee2e6;
+        }
+
+        .ct-col-header {
+            text-align: center;
+            padding: 10px 8px;
+            font-size: 1.0rem;
+            font-weight: 700;
+            border-bottom: 2px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-color);
+        }
+
+        body.light-mode .ct-col-header {
+            border-color: #dee2e6;
+            background: #e9ecef;
+        }
+
+        .ct-col-body {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            padding: 14px 8px;
+            flex: 1;
+            gap: 14px;
+        }
+
+        .ct-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 4px;
+        }
+
+        .ct-item-name {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-color);
+            letter-spacing: -0.3px;
+        }
+
+        .ct-item-time {
+            font-size: 0.86rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            color: #4dabf7;
+            white-space: nowrap;
+        }
+
+        body.light-mode .ct-item-time {
+            color: #1971c2;
+        }
+
+        .ct-item-time.imminent {
+            color: var(--warning);
+            animation: ctPulse 1.5s infinite;
+        }
+
+        @keyframes ctPulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.65; }
+            100% { opacity: 1; }
+        }
+
+        @media (max-width: 650px) {
+            .content-schedule-section {
+                max-width: 100%;
+            }
+            .ct-clock-header {
+                font-size: 1.15rem;
+                padding: 10px 8px;
+            }
+            .ct-col-header {
+                font-size: 0.88rem;
+                padding: 8px 4px;
+            }
+            .ct-item-name {
+                font-size: 0.85rem;
+            }
+            .ct-item-time {
+                font-size: 0.75rem;
+            }
+            .ct-group-bar {
+                flex-wrap: wrap;
+                gap: 6px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -840,6 +1031,75 @@
     <h1>아이온2 관리 도구</h1>
     <div id="recharge-timer">기본 오드 자연 충전까지 남은 시간: 00:00:00</div>
     <p class="note">※ 모든 소모/차감 액션은 <b>좌클릭</b>, 실수로 잘못 누른 액션의 취소/복구는 <b>우클릭</b>을 사용하세요.</p>
+
+    <!-- 컨텐츠 스케줄 타이머 섹션 -->
+    <div class="content-schedule-section">
+        <div class="ct-group-bar">
+            <span class="ct-group-label">구간(그룹) 선택:</span>
+            <div class="ct-group-btns">
+                <button type="button" class="ct-group-btn active" id="ctGroup1" onclick="selectContentGroup(1)">1그룹</button>
+                <button type="button" class="ct-group-btn" id="ctGroup2" onclick="selectContentGroup(2)">2그룹</button>
+                <button type="button" class="ct-group-btn" id="ctGroup3" onclick="selectContentGroup(3)">3그룹</button>
+            </div>
+            <span class="ct-group-hint" id="ctGroupHint">(나흐마 22:00 · 아티쟁 21:30)</span>
+        </div>
+
+        <div class="content-schedule-card">
+            <div class="ct-clock-header">
+                현재 시각 : <span id="ct-live-clock">00:00:00</span>
+            </div>
+            <div class="ct-grid">
+                <!-- 1열: 보스 -->
+                <div class="ct-col">
+                    <div class="ct-col-header">보스</div>
+                    <div class="ct-col-body">
+                        <div class="ct-item">
+                            <div class="ct-item-name" title="매일 01:00, 05:00, 09:00, 13:00, 17:00, 21:00">카이라</div>
+                            <div class="ct-item-time" id="ct-kaira-time">--분 --초</div>
+                        </div>
+                        <div class="ct-item">
+                            <div class="ct-item-name" title="매주 금·일 (1그룹 22:00 / 2그룹 22:30 / 3그룹 23:00)">나흐마</div>
+                            <div class="ct-item-time" id="ct-nahma-time">--일 --시 --분 --초</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2열: PVE 컨텐츠 -->
+                <div class="ct-col">
+                    <div class="ct-col-header">PVE 컨텐츠</div>
+                    <div class="ct-col-body">
+                        <div class="ct-item">
+                            <div class="ct-item-name" title="매시 정각">슈고 페스타</div>
+                            <div class="ct-item-time" id="ct-shugo-time">--분 --초</div>
+                        </div>
+                        <div class="ct-item">
+                            <div class="ct-item-name" title="매시 30분">차원 침공 (확률)</div>
+                            <div class="ct-item-time" id="ct-dimension-time">--분 --초</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3열: PVP 컨텐츠 -->
+                <div class="ct-col">
+                    <div class="ct-col-header">PVP 컨텐츠</div>
+                    <div class="ct-col-body">
+                        <div class="ct-item">
+                            <div class="ct-item-name" title="매주 화·목 22:00">균열 지대</div>
+                            <div class="ct-item-time" id="ct-riftzone-time">--일 --시 --분 --초</div>
+                        </div>
+                        <div class="ct-item">
+                            <div class="ct-item-name" title="시공의 균열 쟁탈전 - 매주 월·목·토 20:00, 23:00">쟁탈전</div>
+                            <div class="ct-item-time" id="ct-riftbattle-time">--일 --시 --분 --초</div>
+                        </div>
+                        <div class="ct-item">
+                            <div class="ct-item-name" title="아티팩트 점령전 - 매주 수·토 (1그룹 21:30 / 2그룹 22:00 / 3그룹 22:30)">아티쟁</div>
+                            <div class="ct-item-time" id="ct-artifact-time">--일 --시 --분 --초</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="top-actions-container">
         <button id="editModeToggleBtn" class="edit-mode-btn" onclick="toggleEditMode()">🔧 편집 모드 (꺼짐)</button>
@@ -1110,6 +1370,7 @@
     let dragStartIndex = -1;      
 
     function init() {
+        initContentTimers();
         checkAutoResets();
         render();
         startRechargeTimer(); 
@@ -1206,6 +1467,210 @@
         }
     }
 
+    // --- 컨텐츠 고정 스케줄 타이머 로직 ---
+    let currentContentGroup = 1;
+
+    function initContentTimers() {
+        const savedGroup = parseInt(localStorage.getItem('aion2_content_group'));
+        if ([1, 2, 3].includes(savedGroup)) {
+            currentContentGroup = savedGroup;
+        }
+        selectContentGroup(currentContentGroup, false);
+    }
+
+    function selectContentGroup(group, updateStorage = true) {
+        currentContentGroup = group;
+        if (updateStorage) {
+            localStorage.setItem('aion2_content_group', group);
+        }
+
+        for (let i = 1; i <= 3; i++) {
+            const btn = document.getElementById(`ctGroup${i}`);
+            if (btn) {
+                btn.classList.toggle('active', i === group);
+            }
+        }
+
+        const hintElem = document.getElementById('ctGroupHint');
+        if (hintElem) {
+            if (group === 1) hintElem.innerText = '(나흐마 22:00 · 아티쟁 21:30)';
+            else if (group === 2) hintElem.innerText = '(나흐마 22:30 · 아티쟁 22:00)';
+            else if (group === 3) hintElem.innerText = '(나흐마 23:00 · 아티쟁 22:30)';
+        }
+
+        updateTimer();
+    }
+
+    function updateContentScheduleTimers(dateKST, now) {
+        const year = dateKST.getUTCFullYear();
+        const month = dateKST.getUTCMonth();
+        const date = dateKST.getUTCDate();
+        const day = dateKST.getUTCDay(); // 0: 일, 1: 월, 2: 화, 3: 수, 4: 목, 5: 금, 6: 토
+        const hr = dateKST.getUTCHours();
+        const min = dateKST.getUTCMinutes();
+        const sec = dateKST.getUTCSeconds();
+
+        // 1. 현재 시각 (HH:MM:SS)
+        const clockElem = document.getElementById('ct-live-clock');
+        if (clockElem) {
+            clockElem.innerText = `${String(hr).padStart(2, '0')}:${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+        }
+
+        const KST_OFFSET = 9 * 3600 * 1000;
+        function getKstEpoch(y, m, d, h, mi, s = 0) {
+            return Date.UTC(y, m, d, h, mi, s) - KST_OFFSET;
+        }
+
+        function formatHourly(totalSeconds) {
+            const m = Math.floor(totalSeconds / 60);
+            const s = totalSeconds % 60;
+            return `${String(m).padStart(2, '0')}분 ${String(s).padStart(2, '0')}초`;
+        }
+
+        function formatKaira(totalSeconds) {
+            const h = Math.floor(totalSeconds / 3600);
+            const m = Math.floor((totalSeconds % 3600) / 60);
+            const s = totalSeconds % 60;
+            const sStr = String(s).padStart(2, '0');
+            const mStr = String(m).padStart(2, '0');
+            if (h > 0) {
+                return `${h}시간 ${mStr}분 ${sStr}초`;
+            }
+            return `${mStr}분 ${sStr}초`;
+        }
+
+        function formatWeekly(totalSeconds) {
+            const d = Math.floor(totalSeconds / 86400);
+            const h = Math.floor((totalSeconds % 86400) / 3600);
+            const m = Math.floor((totalSeconds % 3600) / 60);
+            const s = totalSeconds % 60;
+            const sStr = String(s).padStart(2, '0');
+            const mStr = String(m).padStart(2, '0');
+            const hStr = String(h).padStart(2, '0');
+
+            if (d > 0) {
+                return `${d}일 ${hStr}시 ${mStr}분 ${sStr}초`;
+            }
+            if (h > 0) {
+                return `${hStr}시 ${mStr}분 ${sStr}초`;
+            }
+            return `${mStr}분 ${sStr}초`;
+        }
+
+        function setElemTimer(elemId, diffMs, formatter) {
+            const elem = document.getElementById(elemId);
+            if (!elem) return;
+            const totalSec = Math.max(0, Math.floor(diffMs / 1000));
+            elem.innerText = formatter(totalSec);
+            if (totalSec <= 300) {
+                elem.classList.add('imminent');
+            } else {
+                elem.classList.remove('imminent');
+            }
+        }
+
+        // 1. 카이라 (오전/오후 1, 5, 9시 -> 01:00, 05:00, 09:00, 13:00, 17:00, 21:00)
+        let kairaEpoch = 0;
+        const kairaHours = [1, 5, 9, 13, 17, 21];
+        for (const kh of kairaHours) {
+            const ep = getKstEpoch(year, month, date, kh, 0, 0);
+            if (ep > now) {
+                kairaEpoch = ep;
+                break;
+            }
+        }
+        if (!kairaEpoch) {
+            kairaEpoch = getKstEpoch(year, month, date + 1, 1, 0, 0);
+        }
+        setElemTimer('ct-kaira-time', kairaEpoch - now, formatKaira);
+
+        // 2. 슈고 페스타 (매시 정각)
+        let shugoEpoch = getKstEpoch(year, month, date, hr, 0, 0);
+        if (shugoEpoch <= now) {
+            shugoEpoch = getKstEpoch(year, month, date, hr + 1, 0, 0);
+        }
+        setElemTimer('ct-shugo-time', shugoEpoch - now, formatHourly);
+
+        // 3. 차원 침공 (확률) (매시 30분)
+        let dimEpoch = getKstEpoch(year, month, date, hr, 30, 0);
+        if (dimEpoch <= now) {
+            dimEpoch = getKstEpoch(year, month, date, hr + 1, 30, 0);
+        }
+        setElemTimer('ct-dimension-time', dimEpoch - now, formatHourly);
+
+        // 4. 균열 지대 (매주 화, 목 22:00)
+        let riftZoneEpoch = 0;
+        for (let offset = 0; offset <= 7; offset++) {
+            const curDay = (day + offset) % 7;
+            if (curDay === 2 || curDay === 4) { // Tue(2), Thu(4)
+                const ep = getKstEpoch(year, month, date + offset, 22, 0, 0);
+                if (ep > now) {
+                    riftZoneEpoch = ep;
+                    break;
+                }
+            }
+        }
+        setElemTimer('ct-riftzone-time', riftZoneEpoch - now, formatWeekly);
+
+        // 5. 시공의 균열 쟁탈전 (매주 월, 목, 토 20:00, 23:00)
+        let riftBattleEpoch = 0;
+        const rbDays = [1, 4, 6]; // Mon(1), Thu(4), Sat(6)
+        const rbHours = [20, 23];
+        findRB: for (let offset = 0; offset <= 7; offset++) {
+            const curDay = (day + offset) % 7;
+            if (rbDays.includes(curDay)) {
+                for (const rbh of rbHours) {
+                    const ep = getKstEpoch(year, month, date + offset, rbh, 0, 0);
+                    if (ep > now) {
+                        riftBattleEpoch = ep;
+                        break findRB;
+                    }
+                }
+            }
+        }
+        setElemTimer('ct-riftbattle-time', riftBattleEpoch - now, formatWeekly);
+
+        // 6. 나흐마 (매주 금, 일 - 1그룹 22:00 / 2그룹 22:30 / 3그룹 23:00)
+        let nahmaH = 22, nahmaM = 0;
+        if (currentContentGroup === 2) {
+            nahmaH = 22; nahmaM = 30;
+        } else if (currentContentGroup === 3) {
+            nahmaH = 23; nahmaM = 0;
+        }
+        let nahmaEpoch = 0;
+        for (let offset = 0; offset <= 7; offset++) {
+            const curDay = (day + offset) % 7;
+            if (curDay === 5 || curDay === 0) { // Fri(5), Sun(0)
+                const ep = getKstEpoch(year, month, date + offset, nahmaH, nahmaM, 0);
+                if (ep > now) {
+                    nahmaEpoch = ep;
+                    break;
+                }
+            }
+        }
+        setElemTimer('ct-nahma-time', nahmaEpoch - now, formatWeekly);
+
+        // 7. 아티팩트 점령전 (아티쟁 - 매주 수, 토 - 1그룹 21:30 / 2그룹 22:00 / 3그룹 22:30)
+        let artH = 21, artM = 30;
+        if (currentContentGroup === 2) {
+            artH = 22; artM = 0;
+        } else if (currentContentGroup === 3) {
+            artH = 22; artM = 30;
+        }
+        let artEpoch = 0;
+        for (let offset = 0; offset <= 7; offset++) {
+            const curDay = (day + offset) % 7;
+            if (curDay === 3 || curDay === 6) { // Wed(3), Sat(6)
+                const ep = getKstEpoch(year, month, date + offset, artH, artM, 0);
+                if (ep > now) {
+                    artEpoch = ep;
+                    break;
+                }
+            }
+        }
+        setElemTimer('ct-artifact-time', artEpoch - now, formatWeekly);
+    }
+
     // 1초 단위 타이머 및 자동 동기화 로직
     function startRechargeTimer() {
         updateTimer();
@@ -1217,6 +1682,8 @@
         const KST_OFFSET = 9 * 3600 * 1000;
         
         let dateKST = new Date(now + KST_OFFSET);
+        updateContentScheduleTimers(dateKST, now);
+
         let hr = dateKST.getUTCHours();
         let min = dateKST.getUTCMinutes();
         let sec = dateKST.getUTCSeconds();
