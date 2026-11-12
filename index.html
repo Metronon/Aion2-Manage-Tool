@@ -167,14 +167,19 @@
         }
         .dashboard-bottom-row {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(5, 1fr);
             gap: 15px;
             margin-bottom: 30px;
         }
 
+        @media (max-width: 1200px) {
+            .dashboard-bottom-row { grid-template-columns: repeat(3, 1fr); }
+        }
         @media (max-width: 1024px) {
             .dashboard-top-row { grid-template-columns: 1fr 1fr; }
             .dashboard-top-row > div:first-child { grid-column: 1 / -1; }
+        }
+        @media (max-width: 768px) {
             .dashboard-bottom-row { grid-template-columns: 1fr 1fr; }
         }
         @media (max-width: 600px) {
@@ -363,7 +368,7 @@
 
         .grid-layout {
             display: grid;
-            grid-template-columns: 1.6fr 0.6fr 0.6fr 1.3fr 0.8fr 0.8fr 2.5fr 0.5fr 1.1fr 0.7fr 0.5fr;
+            grid-template-columns: 1.5fr 0.6fr 0.6fr 1.3fr 0.8fr 0.8fr 2.8fr 0.5fr 0.8fr 0.5fr;
             align-items: center;
             gap: 6px; 
         }
@@ -554,27 +559,29 @@
         }
 
         .char-buttons-col {
-            display: flex;
-            justify-content: center;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
             gap: 4px;
             width: 100%;
-            flex-wrap: wrap; 
         }
 
         .action-btn {
-            padding: 6px 8px; 
+            padding: 6px 4px; 
             cursor: pointer;
             background: var(--btn-bg);
             color: var(--text-color);
             border: 1px solid var(--border-color);
             border-radius: 6px;
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             letter-spacing: -0.3px;
             font-weight: 600;
             transition: all 0.15s;
             user-select: none;
             text-align: center;
-            flex: 1 1 45%; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
         }
         .action-btn:hover:not(:disabled) {
             background: var(--btn-hover);
@@ -585,6 +592,17 @@
             color: #868e96;
             opacity: 0.5;
             cursor: not-allowed;
+        }
+
+        .action-btn-special {
+            font-weight: 700;
+            color: #fab005;
+            border-color: rgba(250, 176, 5, 0.45);
+            background: rgba(250, 176, 5, 0.1);
+        }
+        .action-btn-special:hover:not(:disabled) {
+            background: rgba(250, 176, 5, 0.22);
+            border-color: #fab005;
         }
 
         .switch {
@@ -631,6 +649,15 @@
             display: block;
             text-align: center;
             font-size: 1.1rem;
+        }
+        .nm-complete-btn {
+            width: 100%;
+            padding: 3px 0;
+            font-size: 0.72rem;
+            font-weight: 700;
+            line-height: 1.2;
+            cursor: pointer;
+            border-radius: 4px;
         }
 
         .delete-col { display: flex; justify-content: center; width: 100%; }
@@ -1137,18 +1164,40 @@
 
             <div class="dashboard-card">
                 <div class="card-header">
-                    <h3>기본오드 420+</h3>
+                    <h3>성장 던전</h3>
                 </div>
-                <div class="huge-number" id="count-420" style="color: var(--aether-add);">0</div>
-                <div class="char-badges" id="list-420"></div>
+                <div class="action-flex">
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <span id="growth-count" class="clickable-num" title="기본 티켓 (좌클릭- / 우클릭+)" oncontextmenu="handleGlobalClick('growth', true, event)" onclick="handleGlobalClick('growth', false, event)">14</span>
+                        <span style="font-weight: 800; color: var(--sub-text);">+</span>
+                        <span id="growth-extra-count" class="clickable-num" style="color: var(--aether-add);" title="추가 티켓 (좌클릭+ / 우클릭-)" oncontextmenu="handleGlobalExtraClick('growth', false, event)" onclick="handleGlobalExtraClick('growth', true, event)">0</span>
+                    </div>
+                    <button class="pretty-check-btn complete-only-btn" onclick="deductGlobalOne('growth')">✓</button>
+                </div>
+                <div class="progress-container"><div class="progress-bar" id="growth-bar" style="background-color: var(--text-color);"></div></div>
+                <div class="card-footer">
+                    <span id="growth-pct">잔여 100%</span>
+                    <span>/ 14회</span>
+                </div>
             </div>
 
             <div class="dashboard-card">
                 <div class="card-header">
-                    <h3>기본오드 720+</h3>
+                    <h3>각성전</h3>
                 </div>
-                <div class="huge-number" id="count-720" style="color: var(--danger);">0</div>
-                <div class="char-badges" id="list-720"></div>
+                <div class="action-flex">
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <span id="awakening-count" class="clickable-num" title="기본 티켓 (좌클릭- / 우클릭+)" oncontextmenu="handleGlobalClick('awakening', true, event)" onclick="handleGlobalClick('awakening', false, event)">9</span>
+                        <span style="font-weight: 800; color: var(--sub-text);">+</span>
+                        <span id="awakening-extra-count" class="clickable-num" style="color: var(--aether-add);" title="추가 티켓 (좌클릭+ / 우클릭-)" oncontextmenu="handleGlobalExtraClick('awakening', false, event)" onclick="handleGlobalExtraClick('awakening', true, event)">0</span>
+                    </div>
+                    <button class="pretty-check-btn complete-only-btn" onclick="deductGlobalOne('awakening')">✓</button>
+                </div>
+                <div class="progress-container"><div class="progress-bar" id="awakening-bar" style="background-color: var(--text-color);"></div></div>
+                <div class="card-footer">
+                    <span id="awakening-pct">잔여 100%</span>
+                    <span>/ 9회</span>
+                </div>
             </div>
         </div>
 
@@ -1159,7 +1208,7 @@
                     <span class="sub-label">주간 실행 횟수</span>
                 </div>
                 <div class="big-value">
-                    <div id="total-exp-display">0 <span class="max-value">/ 84회</span></div>
+                    <div id="total-exp-display">0 <span class="max-value">/ 63회</span></div>
                     <div class="adj-btn-group">
                         <button class="adj-btn" onclick="adjustTotal('exp', -1)">-</button>
                         <button class="adj-btn" onclick="adjustTotal('exp', 1)">+</button>
@@ -1168,7 +1217,7 @@
                 <div class="progress-container"><div class="progress-bar" id="exp-bar" style="background-color: var(--text-color);"></div></div>
                 <div class="card-footer">
                     <span id="exp-pct">진행률 0%</span>
-                    <span id="exp-remain">84회 여유</span>
+                    <span id="exp-remain">63회 여유</span>
                 </div>
             </div>
 
@@ -1178,7 +1227,7 @@
                     <span class="sub-label">주간 실행 횟수</span>
                 </div>
                 <div class="big-value">
-                    <div id="total-trans-display">0 <span class="max-value">/ 56회</span></div>
+                    <div id="total-trans-display">0 <span class="max-value">/ 15회</span></div>
                     <div class="adj-btn-group">
                         <button class="adj-btn" onclick="adjustTotal('trans', -1)">-</button>
                         <button class="adj-btn" onclick="adjustTotal('trans', 1)">+</button>
@@ -1187,7 +1236,26 @@
                 <div class="progress-container"><div class="progress-bar" id="trans-bar" style="background-color: var(--text-color);"></div></div>
                 <div class="card-footer">
                     <span id="trans-pct">진행률 0%</span>
-                    <span id="trans-remain">56회 여유</span>
+                    <span id="trans-remain">15회 여유</span>
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h3>초월 특별보상</h3>
+                    <span class="sub-label">주간 잔여 횟수</span>
+                </div>
+                <div class="big-value">
+                    <div id="total-special-trans-display">5 <span class="max-value">/ 5회</span></div>
+                    <div class="adj-btn-group">
+                        <button class="adj-btn" onclick="adjustTotal('specialTrans', -1)">-</button>
+                        <button class="adj-btn" onclick="adjustTotal('specialTrans', 1)">+</button>
+                    </div>
+                </div>
+                <div class="progress-container"><div class="progress-bar" id="special-trans-bar" style="background-color: var(--text-color);"></div></div>
+                <div class="card-footer">
+                    <span id="special-trans-pct">잔여 100%</span>
+                    <span id="special-trans-remain">5회 남음</span>
                 </div>
             </div>
 
@@ -1200,7 +1268,7 @@
                     <div style="display: flex; align-items: center; gap: 4px;">
                         <span id="shugo-count" class="clickable-num" title="기본 티켓 (좌클릭- / 우클릭+)" oncontextmenu="handleGlobalClick('shugo', true, event)" onclick="handleGlobalClick('shugo', false, event)">14</span>
                         <span style="font-weight: 800; color: var(--sub-text);">+</span>
-                        <span id="shugo-extra-count" class="clickable-num" style="color: var(--aether-add);" title="추가 티켓 (좌클릭- / 우클릭+)" oncontextmenu="handleGlobalExtraClick('shugo', false, event)" onclick="handleGlobalExtraClick('shugo', true, event)">0</span>
+                        <span id="shugo-extra-count" class="clickable-num" style="color: var(--aether-add);" title="추가 티켓 (좌클릭+ / 우클릭-)" oncontextmenu="handleGlobalExtraClick('shugo', false, event)" onclick="handleGlobalExtraClick('shugo', true, event)">0</span>
                     </div>
                     <button class="pretty-check-btn complete-only-btn" onclick="deductGlobalOne('shugo')">✓</button>
                 </div>
@@ -1220,7 +1288,7 @@
                     <div style="display: flex; align-items: center; gap: 4px;">
                         <span id="invasion-count" class="clickable-num" title="기본 티켓 (좌클릭- / 우클릭+)" oncontextmenu="handleGlobalClick('invasion', true, event)" onclick="handleGlobalClick('invasion', false, event)">7</span>
                         <span style="font-weight: 800; color: var(--sub-text);">+</span>
-                        <span id="invasion-extra-count" class="clickable-num" style="color: var(--aether-add);" title="추가 티켓 (좌클릭- / 우클릭+)" oncontextmenu="handleGlobalExtraClick('invasion', false, event)" onclick="handleGlobalExtraClick('invasion', true, event)">0</span>
+                        <span id="invasion-extra-count" class="clickable-num" style="color: var(--aether-add);" title="추가 티켓 (좌클릭+ / 우클릭-)" oncontextmenu="handleGlobalExtraClick('invasion', false, event)" onclick="handleGlobalExtraClick('invasion', true, event)">0</span>
                     </div>
                     <button class="pretty-check-btn complete-only-btn" onclick="deductGlobalOne('invasion')">✓</button>
                 </div>
@@ -1244,7 +1312,6 @@
                 <div>추가 오드</div>
                 <div>오드 사용 반영</div>
                 <div>회랑</div>
-                <div>각성</div>
                 <div>악몽</div>
                 <div>관리</div>
             </div>
@@ -1334,12 +1401,17 @@
     };
 
     const defaultData = {
+        growth: 14,
+        growthExtra: 0,
+        awakening: 9,
+        awakeningExtra: 0,
         shugo: 14,
         shugoExtra: 0,
         invasion: 7,
         invasionExtra: 0,
         totalExp: 0,
         totalTrans: 0,
+        specialTrans: 5,
         lastCheckTime: Date.now(),
         characters: []
     };
@@ -1347,22 +1419,23 @@
     let appData = JSON.parse(localStorage.getItem('aion2_refined_data')) || defaultData;
     
     // 기존 유저 데이터 호환성 보장 및 새로운 속성 추가
+    if(appData.growth === undefined) appData.growth = 14;
+    if(appData.growthExtra === undefined) appData.growthExtra = 0;
+    if(appData.awakening === undefined) appData.awakening = 9;
+    if(appData.awakeningExtra === undefined) appData.awakeningExtra = 0;
     if(appData.shugoExtra === undefined) appData.shugoExtra = 0;
     if(appData.invasionExtra === undefined) appData.invasionExtra = 0;
+    if(appData.specialTrans === undefined) appData.specialTrans = 5;
     appData.characters.forEach(char => {
         if(char.combatPower === undefined || char.combatPower === '-') char.combatPower = '';
         if(char.charExp === undefined) char.charExp = 0;
         if(char.charTrans === undefined) char.charTrans = 0;
+        if(char.charSpecialTrans === undefined) char.charSpecialTrans = 0;
         if(char.rudra === undefined) char.rudra = false;
         if(char.erosion === undefined) char.erosion = false;
         if(char.muspel === undefined) char.muspel = false;
-        
-        // 각성 횟수제로 마이그레이션
-        if (typeof char.awakening === 'boolean' || char.awakeningBasic === undefined) {
-            char.awakeningBasic = 3;
-            char.awakeningExtra = 0;
-            delete char.awakening;
-        }
+        if(char.sorrow === undefined) char.sorrow = false;
+        if(char.nightmare === undefined) char.nightmare = 14;
     });
 
     let currentModalCharIndex = -1;
@@ -1724,15 +1797,10 @@
         let charCount = appData.characters.length;
         let maxBasic = charCount * 840;
         let maxAdd = charCount * 2000;
-        let chars420 = [];
-        let chars720 = [];
 
         appData.characters.forEach(char => {
             totalBasic += char.basicAether;
             totalAdd += char.addAether;
-            
-            if(char.basicAether >= 420) chars420.push(char.name);
-            if(char.basicAether >= 720) chars720.push(char.name);
         });
 
         document.getElementById('global-basic-text').innerHTML = `${totalBasic.toLocaleString()} <span class="max">/ ${maxBasic.toLocaleString()}</span>`;
@@ -1743,35 +1811,54 @@
         document.getElementById('global-basic-bar').style.width = `${basicPct}%`;
         document.getElementById('global-add-bar').style.width = `${addPct}%`;
 
-        document.getElementById('count-420').innerText = chars420.length;
-        document.getElementById('list-420').innerHTML = chars420.map(name => `<span class="char-badge">${name}</span>`).join('');
-        
-        document.getElementById('count-720').innerText = chars720.length;
-        document.getElementById('list-720').innerHTML = chars720.map(name => `<span class="char-badge">${name}</span>`).join('');
-        document.getElementById('count-720').style.color = chars720.length > 0 ? 'var(--danger)' : 'var(--sub-text)';
+        // 성장 던전 (주 14장 기본 + 최대 30장 추가)
+        document.getElementById('growth-count').innerText = appData.growth;
+        document.getElementById('growth-extra-count').innerText = appData.growthExtra;
+        let growthPct = (appData.growth / 14) * 100;
+        document.getElementById('growth-bar').style.width = `${growthPct}%`;
+        document.getElementById('growth-pct').innerText = `잔여 ${growthPct.toFixed(0)}%`;
 
-        let expPct = Math.min(100, (appData.totalExp / 84) * 100);
-        let remainExp = Math.max(0, 84 - appData.totalExp);
-        document.getElementById('total-exp-display').innerHTML = `${appData.totalExp} <span class="max-value">/ 84회</span>`;
+        // 각성전 (서버 통합: 주 9장 기본 + 최대 30장 추가)
+        document.getElementById('awakening-count').innerText = appData.awakening;
+        document.getElementById('awakening-extra-count').innerText = appData.awakeningExtra;
+        let awkPct = (appData.awakening / 9) * 100;
+        document.getElementById('awakening-bar').style.width = `${awkPct}%`;
+        document.getElementById('awakening-pct').innerText = `잔여 ${awkPct.toFixed(0)}%`;
+
+        // 원정 (주간 63회)
+        let expPct = Math.min(100, (appData.totalExp / 63) * 100);
+        let remainExp = Math.max(0, 63 - appData.totalExp);
+        document.getElementById('total-exp-display').innerHTML = `${appData.totalExp} <span class="max-value">/ 63회</span>`;
         document.getElementById('exp-bar').style.width = `${expPct}%`;
-        document.getElementById('exp-bar').style.backgroundColor = appData.totalExp > 84 ? 'var(--danger)' : 'var(--text-color)';
+        document.getElementById('exp-bar').style.backgroundColor = appData.totalExp > 63 ? 'var(--danger)' : 'var(--text-color)';
         document.getElementById('exp-pct').innerText = `진행률 ${expPct.toFixed(1)}%`;
         document.getElementById('exp-remain').innerText = `${remainExp}회 여유`;
 
-        let transPct = Math.min(100, (appData.totalTrans / 56) * 100);
-        let remainTrans = Math.max(0, 56 - appData.totalTrans);
-        document.getElementById('total-trans-display').innerHTML = `${appData.totalTrans} <span class="max-value">/ 56회</span>`;
+        // 초월 (주간 15회)
+        let transPct = Math.min(100, (appData.totalTrans / 15) * 100);
+        let remainTrans = Math.max(0, 15 - appData.totalTrans);
+        document.getElementById('total-trans-display').innerHTML = `${appData.totalTrans} <span class="max-value">/ 15회</span>`;
         document.getElementById('trans-bar').style.width = `${transPct}%`;
-        document.getElementById('trans-bar').style.backgroundColor = appData.totalTrans > 56 ? 'var(--danger)' : 'var(--text-color)';
+        document.getElementById('trans-bar').style.backgroundColor = appData.totalTrans > 15 ? 'var(--danger)' : 'var(--text-color)';
         document.getElementById('trans-pct').innerText = `진행률 ${transPct.toFixed(1)}%`;
         document.getElementById('trans-remain').innerText = `${remainTrans}회 여유`;
 
+        // 초월 특별보상 (주간 5회)
+        let spPct = (appData.specialTrans / 5) * 100;
+        document.getElementById('total-special-trans-display').innerHTML = `${appData.specialTrans} <span class="max-value">/ 5회</span>`;
+        document.getElementById('special-trans-bar').style.width = `${spPct}%`;
+        document.getElementById('special-trans-bar').style.backgroundColor = appData.specialTrans === 0 ? 'var(--danger)' : 'var(--text-color)';
+        document.getElementById('special-trans-pct').innerText = `잔여 ${spPct.toFixed(0)}%`;
+        document.getElementById('special-trans-remain').innerText = `${appData.specialTrans}회 남음`;
+
+        // 슈고
         document.getElementById('shugo-count').innerText = appData.shugo;
         document.getElementById('shugo-extra-count').innerText = appData.shugoExtra;
         let shugoPct = (appData.shugo / 14) * 100;
         document.getElementById('shugo-bar').style.width = `${shugoPct}%`;
         document.getElementById('shugo-pct').innerText = `잔여 ${shugoPct.toFixed(0)}%`;
 
+        // 침공
         document.getElementById('invasion-count').innerText = appData.invasion;
         document.getElementById('invasion-extra-count').innerText = appData.invasionExtra;
         let invPct = (appData.invasion / 7) * 100;
@@ -1784,10 +1871,9 @@
         appData.characters.forEach((char, index) => {
             const totalAether = char.basicAether + char.addAether;
             
-            const dExp80 = totalAether < 80 ? 'disabled' : '';
             const dExp120 = totalAether < 120 ? 'disabled' : '';
-            const dTrans80 = totalAether < 80 ? 'disabled' : '';
             const dTrans120 = totalAether < 120 ? 'disabled' : '';
+            const dTrans160 = totalAether < 160 ? 'disabled' : '';
 
             const imgSrc = char.job === '권성' ? '권성.webp' : `${char.job}.webp`;
             const overlayColor = jobColors[char.job];
@@ -1861,10 +1947,9 @@
                 </div>
 
                 <div class="char-buttons-col">
-                    <button class="action-btn" ${dExp80} oncontextmenu="spendAether(${index}, 80, 'exp', true, event)" onclick="spendAether(${index}, 80, 'exp', false, event)">원정(80)</button>
                     <button class="action-btn" ${dExp120} oncontextmenu="spendAether(${index}, 120, 'exp', true, event)" onclick="spendAether(${index}, 120, 'exp', false, event)">원정(120)</button>
-                    <button class="action-btn" ${dTrans80} oncontextmenu="spendAether(${index}, 80, 'trans', true, event)" onclick="spendAether(${index}, 80, 'trans', false, event)">초월(80)</button>
                     <button class="action-btn" ${dTrans120} oncontextmenu="spendAether(${index}, 120, 'trans', true, event)" onclick="spendAether(${index}, 120, 'trans', false, event)">초월(120)</button>
+                    <button class="action-btn action-btn-special" ${dTrans160} title="초월 160 소모 / 주 5회 (우클릭: 복구)" oncontextmenu="spendAether(${index}, 160, 'specialTrans', true, event)" onclick="spendAether(${index}, 160, 'specialTrans', false, event)">초월(160)</button>
                 </div>
 
                 <div class="col-center">
@@ -1874,19 +1959,12 @@
                     </label>
                 </div>
 
-                <div class="col-center">
-                    <div style="display: flex; align-items: center; gap: 4px;">
-                        <span class="clickable-num" style="padding: 4px 6px; font-size: 1rem; border-radius: 8px;" title="기본 각성 (좌클릭- / 우클릭+)" oncontextmenu="handleAwakening(${index}, 'basic', true, event)" onclick="handleAwakening(${index}, 'basic', false, event)">${char.awakeningBasic}</span>
-                        <span style="font-weight: 800; color: var(--sub-text); font-size: 0.9rem;">+</span>
-                        <span class="clickable-num" style="color: var(--aether-add); padding: 4px 6px; font-size: 1rem; border-radius: 8px;" title="추가 각성 (좌클릭- / 우클릭+)" oncontextmenu="handleAwakening(${index}, 'extra', true, event)" onclick="handleAwakening(${index}, 'extra', false, event)">${char.awakeningExtra}</span>
-                    </div>
-                </div>
-
                 <div class="char-nightmare-col">
                     <span class="clickable-num" style="color: ${nmColor};" oncontextmenu="handleNightmare(${index}, true, event)" onclick="handleNightmare(${index}, false, event)">${char.nightmare}</span>
                     <div class="nm-progress-container">
                         <div class="nm-progress-bar" style="width: ${nmPct}%; background-color: ${nmColor};"></div>
                     </div>
+                    <button class="pretty-check-btn nm-complete-btn" title="악몽 일괄 완료 (우클릭: 14회 복구)" onclick="completeNightmare(${index}, false, event)" oncontextmenu="completeNightmare(${index}, true, event)">완료</button>
                 </div>
 
                 <div class="delete-col">
@@ -1947,12 +2025,11 @@
             basicAether: 840,
             addAether: 0,
             corridor: false,
-            awakeningBasic: 3,
-            awakeningExtra: 0,
             nightmare: 14,
             combatPower: '',
             charExp: 0,
             charTrans: 0,
+            charSpecialTrans: 0,
             rudra: false,
             erosion: false,
             muspel: false,
@@ -2008,22 +2085,6 @@
         render();
     }
 
-    function handleAwakening(charIndex, type, isRight, event) {
-        event.preventDefault();
-        let char = appData.characters[charIndex];
-        
-        if (type === 'basic') {
-            if (isRight) char.awakeningBasic = Math.min(3, char.awakeningBasic + 1);
-            else char.awakeningBasic = Math.max(0, char.awakeningBasic - 1);
-        } else if (type === 'extra') {
-            if (isRight) char.awakeningExtra = Math.min(30, char.awakeningExtra + 1);
-            else char.awakeningExtra = Math.max(0, char.awakeningExtra - 1);
-        }
-        
-        saveData();
-        render();
-    }
-
     function handleNightmare(charIndex, isRight, event) {
         event.preventDefault();
         let char = appData.characters[charIndex];
@@ -2036,9 +2097,27 @@
         render();
     }
 
+    function completeNightmare(charIndex, isRight, event) {
+        event.preventDefault();
+        let char = appData.characters[charIndex];
+        if (isRight) {
+            char.nightmare = 14;
+        } else {
+            char.nightmare = 0;
+        }
+        saveData();
+        render();
+    }
+
     function handleGlobalClick(type, isRight, event) {
         event.preventDefault();
-        if(type === 'shugo') {
+        if(type === 'growth') {
+            if(isRight) appData.growth = Math.min(14, appData.growth + 1);
+            else appData.growth = Math.max(0, appData.growth - 1);
+        } else if (type === 'awakening') {
+            if(isRight) appData.awakening = Math.min(9, appData.awakening + 1);
+            else appData.awakening = Math.max(0, appData.awakening - 1);
+        } else if(type === 'shugo') {
             if(isRight) appData.shugo = Math.min(14, appData.shugo + 1);
             else appData.shugo = Math.max(0, appData.shugo - 1);
         } else if (type === 'invasion') {
@@ -2051,7 +2130,13 @@
 
     function handleGlobalExtraClick(type, isIncrease, event) {
         event.preventDefault();
-        if(type === 'shugo') {
+        if(type === 'growth') {
+            if(isIncrease) appData.growthExtra = Math.min(30, appData.growthExtra + 1);
+            else appData.growthExtra = Math.max(0, appData.growthExtra - 1);
+        } else if (type === 'awakening') {
+            if(isIncrease) appData.awakeningExtra = Math.min(30, appData.awakeningExtra + 1);
+            else appData.awakeningExtra = Math.max(0, appData.awakeningExtra - 1);
+        } else if(type === 'shugo') {
             if(isIncrease) appData.shugoExtra++;
             else appData.shugoExtra = Math.max(0, appData.shugoExtra - 1);
         } else if (type === 'invasion') {
@@ -2063,7 +2148,19 @@
     }
 
     function deductGlobalOne(type) {
-        if(type === 'shugo') {
+        if(type === 'growth') {
+            if(appData.growth > 0) {
+                appData.growth--;
+            } else if (appData.growthExtra > 0) {
+                appData.growthExtra--;
+            }
+        } else if(type === 'awakening') {
+            if(appData.awakening > 0) {
+                appData.awakening--;
+            } else if (appData.awakeningExtra > 0) {
+                appData.awakeningExtra--;
+            }
+        } else if(type === 'shugo') {
             if(appData.shugo > 0) {
                 appData.shugo--;
             } else if (appData.shugoExtra > 0) {
@@ -2085,6 +2182,8 @@
             appData.totalExp = Math.max(0, appData.totalExp + amount);
         } else if (type === 'trans') {
             appData.totalTrans = Math.max(0, appData.totalTrans + amount);
+        } else if (type === 'specialTrans') {
+            appData.specialTrans = Math.min(5, Math.max(0, appData.specialTrans + amount));
         }
         saveData();
         render();
@@ -2096,6 +2195,10 @@
 
         if (!isRight) { 
             if (char.basicAether + char.addAether < cost) return; 
+            if (type === 'specialTrans' && appData.specialTrans <= 0) {
+                alert('초월 특별보상 주간 횟수(5회)를 이미 모두 소모했습니다.');
+                return;
+            }
 
             if (char.basicAether >= cost) {
                 char.basicAether -= cost;
@@ -2108,13 +2211,21 @@
             if (type === 'exp') {
                 appData.totalExp++;
                 char.charExp++;
-            }
-            if (type === 'trans') {
+            } else if (type === 'trans') {
+                appData.totalTrans++;
+                char.charTrans++;
+            } else if (type === 'specialTrans') {
+                appData.specialTrans = Math.max(0, appData.specialTrans - 1);
+                char.charSpecialTrans = (char.charSpecialTrans || 0) + 1;
                 appData.totalTrans++;
                 char.charTrans++;
             }
 
         } else { 
+            if (type === 'specialTrans' && (char.charSpecialTrans || 0) <= 0 && appData.specialTrans >= 5) {
+                return;
+            }
+
             let emptyBasic = 840 - char.basicAether;
             if (cost <= emptyBasic) {
                 char.basicAether += cost;
@@ -2126,8 +2237,12 @@
             if (type === 'exp') {
                 if(appData.totalExp > 0) appData.totalExp--;
                 if(char.charExp > 0) char.charExp--;
-            }
-            if (type === 'trans') {
+            } else if (type === 'trans') {
+                if(appData.totalTrans > 0) appData.totalTrans--;
+                if(char.charTrans > 0) char.charTrans--;
+            } else if (type === 'specialTrans') {
+                if(appData.specialTrans < 5) appData.specialTrans++;
+                if((char.charSpecialTrans || 0) > 0) char.charSpecialTrans--;
                 if(appData.totalTrans > 0) appData.totalTrans--;
                 if(char.charTrans > 0) char.charTrans--;
             }
@@ -2180,14 +2295,17 @@
                 if (d === 3) {
                     appData.totalExp = 0;
                     appData.totalTrans = 0;
+                    appData.specialTrans = 5;
+                    appData.growth = 14;
+                    appData.awakening = 9;
                     appData.characters.forEach(char => {
                         char.charExp = 0;
                         char.charTrans = 0;
+                        char.charSpecialTrans = 0;
                         char.rudra = false;
                         char.erosion = false;
                         char.muspel = false;
                         char.sorrow = false;
-                        char.awakeningBasic = 3;
                     });
                 }
                 changed = true;
