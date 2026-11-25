@@ -368,7 +368,7 @@
 
         .grid-layout {
             display: grid;
-            grid-template-columns: 1.5fr 0.6fr 0.6fr 1.3fr 0.8fr 0.8fr 2.8fr 0.5fr 0.8fr 0.5fr;
+            grid-template-columns: 1.5fr 0.6fr 0.6fr 1.3fr 0.8fr 0.8fr 2.3fr 0.6fr 0.5fr 0.8fr 0.5fr;
             align-items: center;
             gap: 6px; 
         }
@@ -603,6 +603,33 @@
         .action-btn-special:hover:not(:disabled) {
             background: rgba(250, 176, 5, 0.22);
             border-color: #fab005;
+        }
+
+        .recharge-btn {
+            padding: 6px 4px;
+            background: var(--btn-bg);
+            color: var(--aether-add);
+            border: 1px solid var(--aether-add);
+            border-radius: 6px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+            user-select: none;
+            white-space: nowrap;
+            width: 100%;
+            text-align: center;
+            box-sizing: border-box;
+        }
+        .recharge-btn:hover:not(:disabled) {
+            background: rgba(51, 154, 240, 0.2);
+            border-color: #339af0;
+        }
+        .recharge-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            border-color: var(--border-color);
+            color: var(--sub-text);
         }
 
         .switch {
@@ -1311,6 +1338,7 @@
                 <div>기본 오드</div>
                 <div>추가 오드</div>
                 <div>오드 사용 반영</div>
+                <div>충전</div>
                 <div>회랑</div>
                 <div>악몽</div>
                 <div>관리</div>
@@ -1431,6 +1459,7 @@
         if(char.charExp === undefined) char.charExp = 0;
         if(char.charTrans === undefined) char.charTrans = 0;
         if(char.charSpecialTrans === undefined) char.charSpecialTrans = 0;
+        if(char.lastRecharged === undefined) char.lastRecharged = 0;
         if(char.rudra === undefined) char.rudra = false;
         if(char.erosion === undefined) char.erosion = false;
         if(char.muspel === undefined) char.muspel = false;
@@ -1953,6 +1982,10 @@
                 </div>
 
                 <div class="col-center">
+                    <button class="recharge-btn" ${char.addAether >= 1991 ? 'disabled' : ''} title="추가 오드 자동 충전 (큰오드 40 우선, 작은오드 10 / 우클릭: 직전 충전 취소)" onclick="autoRechargeAddAether(${index}, false, event)" oncontextmenu="autoRechargeAddAether(${index}, true, event)">충전</button>
+                </div>
+
+                <div class="col-center">
                     <label class="switch">
                         <input type="checkbox" ${char.corridor ? 'checked' : ''} onchange="toggleCheck(${index}, 'corridor')">
                         <span class="slider"></span>
@@ -2030,6 +2063,7 @@
             charExp: 0,
             charTrans: 0,
             charSpecialTrans: 0,
+            lastRecharged: 0,
             rudra: false,
             erosion: false,
             muspel: false,
@@ -2250,6 +2284,37 @@
 
         saveData();
         render();
+    }
+
+    function autoRechargeAddAether(charIndex, isRight, event) {
+        event.preventDefault();
+        let char = appData.characters[charIndex];
+
+        if (!isRight) { // 좌클릭: 추가 오드 자동 충전
+            let deficit = 2000 - char.addAether;
+            if (deficit < 10) return;
+
+            let bigCount = Math.floor(deficit / 40);
+            deficit -= bigCount * 40;
+
+            let smallCount = Math.floor(deficit / 10);
+            deficit -= smallCount * 10;
+
+            let totalRecharge = (bigCount * 40) + (smallCount * 10);
+            if (totalRecharge > 0) {
+                char.lastRecharged = totalRecharge;
+                char.addAether = Math.min(2000, char.addAether + totalRecharge);
+                saveData();
+                render();
+            }
+        } else { // 우클릭: 직전 자동 충전 취소 및 원상복구
+            if (char.lastRecharged && char.lastRecharged > 0) {
+                char.addAether = Math.max(0, char.addAether - char.lastRecharged);
+                char.lastRecharged = 0;
+                saveData();
+                render();
+            }
+        }
     }
 
     function checkAutoResets() {
